@@ -1,8 +1,30 @@
 {
-  "name": "sentinel",
-  "private": true,
-  "version": "0.0.0",
+  "name": "sentinel-cps",
+  "version": "1.0.0",
+  "description": "Dual-Tier Cyber-Physical Architecture for Dynamic Cross-Sensitivity Compensation & Zero-Trust Edge Safety in Residential Gas Monitoring",
   "type": "module",
+  "author": "Shreedhar Sharma <https://portfolio-five-delta-xr8oas2k65.vercel.app/>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shree-svg/-SENTINEL.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Shree-svg/-SENTINEL/issues"
+  },
+  "homepage": "https://github.com/Shree-svg/-SENTINEL#readme",
+  "keywords": [
+    "cyber-physical-systems",
+    "edge-computing",
+    "gas-safety",
+    "iot",
+    "arduino-nano",
+    "cross-sensitivity-compensation",
+    "zero-trust-safety",
+    "react",
+    "vite",
+    "typescript"
+  ],
   "scripts": {
     "dev": "vite",
     "server": "node server/index.js",

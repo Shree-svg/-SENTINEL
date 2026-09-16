@@ -213,7 +213,7 @@ async function scanAndConnectSerial() {
             const hum = parseFloat(match[3]);
             processReading(rawGas, temp, hum, Date.now());
           }
-        } catch (e) {
+        } catch {
           // Skip invalid frame
         }
       });
