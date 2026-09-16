@@ -3,7 +3,7 @@
 ### *Dynamic Cross-Sensitivity Compensation & Zero-Trust Edge Safety in Residential Gas Monitoring*
 
 [![CI](https://github.com/Shree-svg/-SENTINEL/actions/workflows/ci.yml/badge.svg)](https://github.com/Shree-svg/-SENTINEL/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](../LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%208-61dafb?style=flat-square&logo=react)](https://react.dev)
 [![Hardware](https://img.shields.io/badge/Hardware-Arduino%20Nano-00979D?style=flat-square&logo=arduino)](https://www.arduino.cc)
@@ -118,9 +118,13 @@ $$\text{Class} = \begin{cases} \text{Cooking Steam (Interference)}, & \text{if }
 │   └── pull_request_template.md   # Standardized Pull Request template
 ├── docs/                          # Architectural & Engineering Documentation
 │   ├── ARCHITECTURE.md            # System architecture, schemas, and endpoint specs
+│   ├── CODE_OF_CONDUCT.md         # Contributor Covenant Code of Conduct
+│   ├── CONTRIBUTING.md            # Contributor guidelines and workflow
 │   ├── DESIGN.md                  # UI/UX design tokens & styling guide
-│   ├── PRODUCT.md                 # Product requirements & user stories
 │   ├── Memory.md                  # Technical decisions & engineering history
+│   ├── PRODUCT.md                 # Product requirements & user stories
+│   ├── README.md                  # Project overview & architecture summary
+│   ├── SECURITY.md                # Zero-trust safety policy & vulnerability reporting
 │   └── implementation_plan.md     # Implementation roadmap
 ├── firmware/                      # Embedded C++ Microcontroller Firmware
 │   └── sentinel_firmware/
@@ -132,9 +136,6 @@ $$\text{Class} = \begin{cases} \text{Cooking Steam (Interference)}, & \text{if }
 │   ├── components/                # Modular UI components (LiveStatus, Caregiver, etc.)
 │   ├── hooks/                     # Custom hooks (usePolling, useReadingHistory)
 │   └── types/                     # TypeScript data interfaces
-├── CONTRIBUTING.md                # Contributor guidelines and workflow
-├── CODE_OF_CONDUCT.md             # Contributor Covenant Code of Conduct
-├── SECURITY.md                    # Zero-trust safety policy & vulnerability reporting
 ├── LICENSE                        # MIT License
 └── package.json                   # Project metadata and dependencies
 ```
@@ -156,7 +157,7 @@ npm install
 ```
 
 ### 3. Flash Arduino Firmware
-1. Open [`firmware/sentinel_firmware/sentinel_firmware.ino`](./firmware/sentinel_firmware/sentinel_firmware.ino) in the Arduino IDE.
+1. Open [`firmware/sentinel_firmware/sentinel_firmware.ino`](../firmware/sentinel_firmware/sentinel_firmware.ino) in the Arduino IDE.
 2. In the Library Manager (`Tools > Manage Libraries`), confirm **DHT sensor library by Adafruit** is installed.
 3. Select **Board**: `Arduino Nano` (Processor: `ATmega328P` or `ATmega328P (Old Bootloader)`).
 4. Select your USB port (`/dev/cu.usbserial-*` or `COM*`) and click **Upload**.
@@ -192,10 +193,10 @@ npm run lint
 
 ## 👥 Community & Policies
 
-- **Contributing**: Please review [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, commit formats, and development setup.
-- **Code of Conduct**: We follow the [Contributor Covenant v2.1](CODE_OF_CONDUCT.md).
-- **Security Policy**: Read [SECURITY.md](SECURITY.md) for details on physical safety invariants and vulnerability disclosure.
-- **License**: Released under the [MIT License](LICENSE).
+- **Contributing**: Please review [CONTRIBUTING.md](./CONTRIBUTING.md) for branch naming, commit formats, and development setup.
+- **Code of Conduct**: We follow the [Contributor Covenant v2.1](./CODE_OF_CONDUCT.md).
+- **Security Policy**: Read [SECURITY.md](./SECURITY.md) for details on physical safety invariants and vulnerability disclosure.
+- **License**: Released under the [MIT License](../LICENSE).
 
 ---
 
