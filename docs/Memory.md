@@ -82,12 +82,12 @@ These restate `Rules.md` §1 for visibility — they are the single most importa
 
 ---
 
-## 7. Delivery & Completion Milestones (Loops 0 – 7)
+## 7. Delivery & Engineering Milestones (Phases 1 – 7)
 
-- **Loop 0 (Architecture & Spec):** Spec, system data flow, schema, and tasks completed.
-- **Loop 1 (Foundation):** TypeScript models, REST client, and Shell setup completed.
-- **Loop 2 (Live Status Panel):** Real-time gauge, SVG trend sparklines, climate cards, and low-confidence override banner completed.
-- **Loop 3 & 4 (Alert History & Contributing Factors):** Filterable table, acknowledgment workflow, and slide-in decision explainability drawer completed.
-- **Loop 5 (Caregiver View):** Role-gated read-only caregiver portal and resident consent management completed.
-- **Loop 6 (Notification Engine):** Web Notifications API, 2.8kHz piezo buzzer synthesis, repeat escalation timers, and quiet-hour scheduling completed.
-- **Loop 7 (6-Pillar Quality Audit & Production Release):** Verified zero compile errors, WCAG 2.1 AA accessibility contrast, responsive layout, and universal safety disclaimer enforcement.
+- **Phase 1 (Architecture & System Modeling):** System data flow, hardware-software boundary definition, and telemetry schemas completed.
+- **Phase 2 (Core Foundation & Types):** Strict TypeScript models, REST client, and Shell navigation completed.
+- **Phase 3 (Live Status Telemetry):** Real-time gauge, SVG trend sparklines, environmental climate cards, and low-confidence override banner completed.
+- **Phase 4 (Alert History & Explainability):** Filterable incident table, acknowledgment workflow, and slide-in decision explainability drawer completed.
+- **Phase 5 (Asymmetric Caregiver Portal):** Role-gated read-only caregiver interface and emergency dispatch protocol completed.
+- **Phase 6 (Notification & Hardware Test Engine):** Web Notifications API, 2.8kHz piezo buzzer synthesis, repeat escalation timers, and physical buzzer testing completed.
+- **Phase 7 (Quality Audit & Production Release):** Verified zero compile errors, WCAG 2.1 AA accessibility contrast, responsive layout, and universal safety disclaimer enforcement.

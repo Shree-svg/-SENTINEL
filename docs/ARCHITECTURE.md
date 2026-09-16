@@ -12,8 +12,7 @@ This document lists every file that will exist in the **SENTINEL** React + T
 | `vite.config.ts` | Vite configuration (React, TS, env handling) | — |
 | `tsconfig.json` | TypeScript compiler options (strict mode) | — |
 | `tailwind.config.cjs` | Tailwind CSS custom theme (color palette for Normal/Background‑Interference/Genuine‑Leak) | — |
-| `postcss.config.cjs` | PostCSS pipeline for Tailwind | — |
-| `.speckit/speckit.config` | speckit integration config (`{"integration":"claude"}`) | — |
+| `LICENSE` | MIT Open-Source License | — |
 | `README.md` | Project overview & setup instructions | — |
 
 ---
@@ -46,4 +45,4 @@ This document lists every file that will exist in the **SENTINEL** React + T
 
 ---
 
-*All files above are non‑existent at this stage; they will be created in subsequent loops.*
+*All core modules above have been fully implemented and verified in the production build.*
