@@ -1,0 +1,13 @@
+{
+  "description": "SENTINEL Steam-Response Regression & Signal Analytics Configuration",
+  "enabled": true,
+  "dangerThreshold": 500,
+  "baselineHumidity": 50.0,
+  "baselineTemperature": 24.0,
+  "humidityCoefficient": 2.8,
+  "temperatureCoefficient": 1.2,
+  "intercept": 0.0,
+  "maxSteamDeduction": 250,
+  "warmupDurationSeconds": 30,
+  "flatlineSampleCount": 15
+}

@@ -1,18 +1,38 @@
 // src/types/index.ts
 // REQ-SEN-1, REQ-SEN-2, REQ-ML-3, REQ-ALT-1, REQ-ALT-3
 
+export interface SensorHealth {
+  isDegraded: boolean;
+  status: "healthy" | "degraded" | "warming_up" | "failure";
+  warnings: string[];
+  warmupRemainingSeconds?: number;
+  flatlined?: boolean;
+  dhtFailed?: boolean;
+}
+
 export interface Reading {
   _id?: string;
   sensorId: string;
   raw: number; // 0–1023 (MQ2 analog reading)
+  gas: number; // MQ2 analog reading (alias for raw)
   temperature: number; // °C (DHT11)
+  temp: number; // alias for temperature (°C)
   humidity: number; // % (DHT11)
+  rh: number; // alias for humidity (%)
+  hum?: number; // alias for humidity (%)
+  seq: number; // packet sequence counter
+  alarm: boolean; // hardware safety floor alarm status
+  compensatedGas?: number; // Steam-response regression compensated gas
+  steamEstimate?: number; // Estimated steam excitation deduction
   deviceTime: string | number; // millis or ISO
   serverTime: string; // ISO timestamp
   rate_of_change_gas?: number;
   rate_of_change_hum?: number;
   rate_of_change_temp?: number;
   rolling_avg_gas?: number;
+  slope?: number; // 10-sample regression slope of compensated gas (ADC/s)
+  timeToThresholdSeconds?: number | null; // Estimated seconds to danger threshold (500 ADC)
+  sensorHealth?: SensorHealth;
   classification?: Classification;
 }
 
@@ -43,6 +63,9 @@ export interface Alert {
   createdAt: string; // ISO timestamp
   acknowledgedAt?: string; // ISO timestamp
   escalationCount?: number;
+  isSimulated?: boolean;
+  isDemo?: boolean;
+  isRealHardware?: boolean;
 }
 
 export interface CaregiverLink {

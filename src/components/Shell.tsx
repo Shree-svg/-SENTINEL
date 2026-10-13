@@ -14,7 +14,16 @@ import {
   Usb,
   Cpu
 } from "lucide-react";
-import { getHardwareStatus } from "../api";
+import { getHardwareStatus, enableDemoMode, disableDemoMode, setDemoScenario } from "../api";
+
+const DEMO_SCENARIOS = [
+  { id: "normal", label: "Normal air" },
+  { id: "steam", label: "Kitchen steam" },
+  { id: "cooking", label: "Cooking" },
+  { id: "gas_leak", label: "Gas leak" },
+  { id: "adc_saturation", label: "Sensor overflow" },
+  { id: "sensor_fault", label: "Sensor fault" },
+];
 
 export default function Shell() {
   const [hwStatus, setHwStatus] = useState<{
@@ -23,29 +32,88 @@ export default function Shell() {
     sensorSuite: string;
     baudRate: number;
     watchdogStatus: string;
+    demoActive?: boolean;
+    scenario?: string;
+    realDeviceActive?: boolean;
+    demoNotice?: string | null;
   }>({
     hardwareConnected: false,
     port: null,
     sensorSuite: "MQ2 (A0) + DHT11 (D2)",
-    baudRate: 115200,
-    watchdogStatus: "Scanning..."
+    baudRate: 9600,
+    watchdogStatus: "Scanning...",
+    demoActive: false,
+    scenario: "normal",
+    realDeviceActive: false,
+    demoNotice: null
   });
 
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
+
   useEffect(() => {
-    getHardwareStatus().then(setHwStatus);
-    const id = setInterval(() => {
-      getHardwareStatus().then(setHwStatus);
-    }, 2000);
+    const fetchStatus = () => {
+      getHardwareStatus().then((status) => {
+        setHwStatus(status);
+        if (status.demoNotice) {
+          setNoticeMessage(status.demoNotice);
+        }
+      });
+    };
+
+    fetchStatus();
+    const id = setInterval(fetchStatus, 2000);
     return () => clearInterval(id);
   }, []);
+
+  const isRealActive = Boolean(hwStatus.realDeviceActive || hwStatus.hardwareConnected);
+  const isDemoActive = Boolean(hwStatus.demoActive);
+
+  const handleToggleDemo = async () => {
+    if (isDemoActive) {
+      await disableDemoMode();
+    } else {
+      if (isRealActive) return;
+      try {
+        await enableDemoMode();
+      } catch (err: any) {
+        setNoticeMessage(err.message || "Real device connected");
+      }
+    }
+    const updated = await getHardwareStatus();
+    setHwStatus(updated);
+  };
+
+  const handleScenarioChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const sc = e.target.value;
+    await setDemoScenario(sc);
+    const updated = await getHardwareStatus();
+    setHwStatus(updated);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F4F5F7] text-[#1E293B]">
       
       {/* Top Application Header */}
       <header className="sticky top-0 z-30 bg-[#FFFFFF]/90 backdrop-blur-md border-b border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+        {/* Notice alert when real device pre-empts demo mode */}
+        {noticeMessage && (
+          <div className="bg-[#FEF3C7] border-b border-[#FDE68A] text-[#92400E] px-4 py-2 text-xs flex items-center justify-between shadow-xs">
+            <div className="flex items-center space-x-2 font-semibold">
+              <AlertTriangle className="w-4 h-4 text-[#D97706] shrink-0" />
+              <span>{noticeMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setNoticeMessage(null)}
+              className="text-xs font-bold text-[#92400E] hover:underline ml-4 cursor-pointer"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-18 py-2">
+          <div className="flex flex-wrap items-center justify-between min-h-18 py-2 gap-3">
             
             {/* Brand Logo & Telemetry Status */}
             <div className="flex items-center space-x-3.5">
@@ -74,8 +142,66 @@ export default function Shell() {
               </div>
             </div>
 
-            {/* Tactile Segmented Pill Tab Navigation (per Styleguide) */}
-            <nav className="recessed-inset p-1 rounded-full flex items-center space-x-1">
+            {/* Header Right Controls: Demo Toggle & Navigation */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Demo readings toggle switch & badge & dropdown */}
+              <div className="flex items-center space-x-2 bg-[#FAFBFD] border border-[#E2E8F0] px-3 py-1.5 rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                {/* Visible DEMO READINGS badge when ON */}
+                {isDemoActive && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] animate-pulse">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] mr-1.5"></span>
+                    DEMO READINGS
+                  </span>
+                )}
+
+                {/* Scenario dropdown when ON */}
+                {isDemoActive && (
+                  <select
+                    value={hwStatus.scenario || "normal"}
+                    onChange={handleScenarioChange}
+                    className="text-xs bg-[#FFFFFF] border border-[#CBD5E1] text-[#0F172A] font-semibold rounded-lg px-2 py-0.5 shadow-xs focus:outline-none focus:ring-1 focus:ring-[#0E7054] cursor-pointer"
+                  >
+                    {DEMO_SCENARIOS.map((sc) => (
+                      <option key={sc.id} value={sc.id}>
+                        {sc.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Demo readings toggle switch */}
+                <div 
+                  className="flex items-center space-x-2"
+                  title={isRealActive ? "Real device connected" : "Toggle synthetic demo readings streaming"}
+                >
+                  <span className={`text-xs font-semibold select-none ${isRealActive ? "text-[#94A3B8]" : "text-[#334155]"}`}>
+                    Demo readings
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isDemoActive}
+                    disabled={isRealActive}
+                    onClick={handleToggleDemo}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      isRealActive
+                        ? "bg-[#CBD5E1] cursor-not-allowed opacity-50"
+                        : isDemoActive
+                        ? "bg-[#0E7054]"
+                        : "bg-[#CBD5E1] hover:bg-[#94A3B8]"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                        isDemoActive ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Tactile Segmented Pill Tab Navigation (per Styleguide) */}
+              <nav className="recessed-inset p-1 rounded-full flex items-center space-x-1">
               <NavLink
                 to="/monitor"
                 className={({ isActive }) =>
@@ -148,6 +274,7 @@ export default function Shell() {
             </nav>
           </div>
         </div>
+      </div>
 
         {/* Minimalist Sub-Status Bar */}
         <div className="bg-[#FAFBFD] border-t border-[#EDF0F4] px-4 py-1.5 text-xs text-[#64748B]">

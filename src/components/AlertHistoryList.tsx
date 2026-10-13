@@ -29,8 +29,8 @@ export default function AlertHistoryList({ readOnly = false }: Props) {
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [ackLoadingId, setAckLoadingId] = useState<string | null>(null);
 
-  const fetchAlertsData = useCallback(async () => {
-    setLoading(true);
+  const fetchAlertsData = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
     try {
       const data = await getAlerts({
         ...(filterStatus && { status: filterStatus }),
@@ -39,14 +39,16 @@ export default function AlertHistoryList({ readOnly = false }: Props) {
       setAlerts(data);
       setError(null);
     } catch (err: any) {
-      setError(err.message || "Failed to load alert history");
+      if (!isBackground) setError(err.message || "Failed to load alert history");
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   }, [filterSeverity, filterStatus]);
 
   useEffect(() => {
-    fetchAlertsData();
+    fetchAlertsData(false);
+    const interval = setInterval(() => fetchAlertsData(true), 2000);
+    return () => clearInterval(interval);
   }, [fetchAlertsData]);
 
   const handleAcknowledge = async (id: string) => {
@@ -101,7 +103,7 @@ export default function AlertHistoryList({ readOnly = false }: Props) {
         </div>
 
         <button
-          onClick={fetchAlertsData}
+          onClick={() => fetchAlertsData(false)}
           className="btn-secondary-clay self-start sm:self-auto px-4 py-2 rounded-full text-xs font-semibold flex items-center space-x-1.5 transition"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -246,6 +248,12 @@ export default function AlertHistoryList({ readOnly = false }: Props) {
                             )}
                             {alert.classification.label}
                           </span>
+
+                          {(alert.isSimulated || alert.isDemo) && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] font-mono">
+                              SIMULATED
+                            </span>
+                          )}
 
                           {isLowConf && (
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold alert-pill-danger font-mono">

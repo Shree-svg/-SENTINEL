@@ -14,6 +14,10 @@ export async function getHardwareStatus(): Promise<{
   sensorSuite: string;
   baudRate: number;
   watchdogStatus: string;
+  demoActive?: boolean;
+  scenario?: string;
+  realDeviceActive?: boolean;
+  demoNotice?: string | null;
 }> {
   try {
     const res = await fetch(`${baseUrl}/api/hardware/status`);
@@ -28,7 +32,11 @@ export async function getHardwareStatus(): Promise<{
     port: null,
     sensorSuite: "MQ2 (A0) + DHT11 (D2)",
     baudRate: 115200,
-    watchdogStatus: "Offline / Awaiting Bridge"
+    watchdogStatus: "Offline / Awaiting Bridge",
+    demoActive: false,
+    scenario: "normal",
+    realDeviceActive: false,
+    demoNotice: null
   };
 }
 
@@ -144,3 +152,95 @@ export async function toggleCaregiverLink(linkId: string, active: boolean): Prom
   });
   return res.ok;
 }
+
+/**
+ * Dataset recording session management
+ */
+export async function getRecordingStatus(): Promise<{
+  isRecording: boolean;
+  label: string;
+  sampleCount: number;
+  filename: string | null;
+  recordedFiles: string[];
+}> {
+  try {
+    const res = await fetch(`${baseUrl}/api/recording/status`);
+    if (res.ok) return await res.json();
+  } catch {
+    // fallback
+  }
+  return {
+    isRecording: false,
+    label: "normal",
+    sampleCount: 0,
+    filename: null,
+    recordedFiles: []
+  };
+}
+
+export async function startRecordingSession(label: string = "normal"): Promise<boolean> {
+  const res = await fetch(`${baseUrl}/api/recording/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ label })
+  });
+  return res.ok;
+}
+
+export async function stopRecordingSession(): Promise<any> {
+  const res = await fetch(`${baseUrl}/api/recording/stop`, {
+    method: "POST"
+  });
+  if (res.ok) return await res.json();
+  return { success: false };
+}
+
+/**
+ * Enable synthetic demo readings streaming (rejected if real device active)
+ */
+export async function enableDemoMode(): Promise<{ ok: boolean; demoActive: boolean; scenario?: string; error?: string }> {
+  const res = await fetch(`${baseUrl}/api/demo/enable`, {
+    method: "POST"
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to enable demo mode");
+  }
+  return data;
+}
+
+/**
+ * Disable synthetic demo readings streaming
+ */
+export async function disableDemoMode(): Promise<{ ok: boolean; demoActive: boolean }> {
+  const res = await fetch(`${baseUrl}/api/demo/disable`, {
+    method: "POST"
+  });
+  return await res.json().catch(() => ({ ok: true, demoActive: false }));
+}
+
+/**
+ * Switch demo simulation scenario
+ */
+export async function setDemoScenario(scenario: string): Promise<{ ok: boolean; scenario: string }> {
+  const res = await fetch(`${baseUrl}/api/demo/scenario`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ scenario })
+  });
+  return await res.json();
+}
+
+/**
+ * Adjust demo simulated packet loss and corruption rates
+ */
+export async function setDemoLink(lossRate: number, corruptRate: number): Promise<{ ok: boolean; lossRate: number; corruptRate: number }> {
+  const res = await fetch(`${baseUrl}/api/demo/link`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lossRate, corruptRate })
+  });
+  return await res.json();
+}
+
+

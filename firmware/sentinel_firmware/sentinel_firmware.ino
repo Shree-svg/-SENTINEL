@@ -15,6 +15,31 @@ SoftwareSerial BT(BT_RX, BT_TX);
 
 int threshold = 300; // Gas threshold trigger level
 
+void sendPacket(int gas, float temp, float hum, int alarm) {
+  static uint16_t seq = 0;
+
+  // Scale temp and humidity by 10 with rounding (integers only for AVR libc)
+  int temp_x10 = (int)(temp * 10.0f + (temp >= 0 ? 0.5f : -0.5f));
+  int rh_x10   = (int)(hum * 10.0f + 0.5f);
+
+  // Format payload between '$' and '*'
+  char payload[48];
+  snprintf(payload, sizeof(payload), "S,%u,%d,%d,%d,%d", seq++, gas, temp_x10, rh_x10, alarm);
+
+  // XOR checksum across all characters between '$' and '*'
+  uint8_t checksum = 0;
+  for (uint8_t i = 0; payload[i] != '\0'; i++) {
+    checksum ^= (uint8_t)payload[i];
+  }
+
+  // Assemble final packet with 2-digit uppercase hex checksum
+  char packet[64];
+  snprintf(packet, sizeof(packet), "$%s*%02X", payload, checksum);
+
+  Serial.println(packet);
+  BT.println(packet);
+}
+
 void setup() {
   Serial.begin(9600); 
   BT.begin(9600);     
@@ -52,11 +77,14 @@ void loop() {
     hum = 0.0;
   }
 
-  // Format data string
+  // Format legacy status string for human-readable monitors
   String statusMsg = "Gas: " + String(gasValue) + " | Temp: " + String(temp, 1) + "C | Hum: " + String(hum, 1) + "%";
-
   Serial.println(statusMsg);
   BT.println(statusMsg);
+
+  // Dispatch standard telemetry packet once per second ($S,<seq>,<gas>,<temp*10>,<rh*10>,<alarm>*<CS>)
+  int alarmState = (gasValue > threshold) ? 1 : 0;
+  sendPacket(gasValue, temp, hum, alarmState);
 
   // Gas Detection Alert Logic
   if (gasValue > threshold) {

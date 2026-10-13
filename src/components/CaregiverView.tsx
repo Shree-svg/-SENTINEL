@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import LiveStatusPanel from "./LiveStatusPanel";
 import AlertHistoryList from "./AlertHistoryList";
-import { getCaregiverLinks, toggleCaregiverLink } from "../api";
+import { getCaregiverLinks, toggleCaregiverLink, getHardwareStatus } from "../api";
 import type { CaregiverLink } from "../types";
 import { 
   HeartHandshake, 
@@ -21,9 +21,16 @@ import {
 export default function CaregiverView() {
   const [links, setLinks] = useState<CaregiverLink[]>([]);
   const [activeTab, setActiveTab] = useState<"live" | "alerts" | "resident">("live");
+  const [isDemoActive, setIsDemoActive] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     getCaregiverLinks().then(setLinks);
+    getHardwareStatus().then((s) => setIsDemoActive(Boolean(s.demoActive)));
+    const id = setInterval(() => {
+      getHardwareStatus().then((s) => setIsDemoActive(Boolean(s.demoActive)));
+    }, 2000);
+    return () => clearInterval(id);
   }, []);
 
   const handleToggleLink = async (linkId: string, currentActive: boolean) => {
@@ -31,6 +38,14 @@ export default function CaregiverView() {
     setLinks((prev) =>
       prev.map((l) => (l._id === linkId ? { ...l, active: !currentActive } : l))
     );
+  };
+
+  const handleEmergencyCall = (e: React.MouseEvent) => {
+    if (isDemoActive) {
+      e.preventDefault();
+      setToastMessage("112 prompt (simulated)");
+      setTimeout(() => setToastMessage(null), 4000);
+    }
   };
 
   const primaryLink = links[0] || {
@@ -46,6 +61,13 @@ export default function CaregiverView() {
 
   return (
     <div className="space-y-6">
+      {/* Simulated 112 toast notice */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#991B1B] text-white px-5 py-3 rounded-2xl shadow-xl flex items-center space-x-2 text-xs font-bold border border-red-400 animate-bounce">
+          <Phone className="w-4 h-4 animate-pulse" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
       
       {/* Caregiver Profile Header Card (Elevated Clay Styleguide Card) */}
       <div className="elevation-2 p-6 sm:p-7 rounded-3xl">
@@ -78,11 +100,13 @@ export default function CaregiverView() {
           {/* Quick Emergency Call Button */}
           <div className="flex items-center space-x-3 self-start md:self-auto">
             <a
-              href="tel:112"
+              href={isDemoActive ? "#" : "tel:112"}
+              onClick={handleEmergencyCall}
               className="px-4 py-2.5 rounded-full bg-[#EF4444] hover:bg-[#DC2626] text-[#FFFFFF] text-xs font-bold flex items-center space-x-1.5 transition shadow-[0_2px_8px_rgba(239,68,68,0.25)]"
+              title={isDemoActive ? "Simulation mode active: real phone call blocked" : "Call emergency services"}
             >
               <Phone className="w-3.5 h-3.5" />
-              <span>Emergency Services (112)</span>
+              <span>Emergency Services (112){isDemoActive ? " (Simulated)" : ""}</span>
             </a>
 
             <div className="recessed-inset px-4 py-2 rounded-2xl text-right text-xs hidden sm:block">

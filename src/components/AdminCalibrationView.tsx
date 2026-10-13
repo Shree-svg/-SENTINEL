@@ -1,8 +1,12 @@
-// src/components/AdminCalibrationView.tsx
-// Sensor calibration, data labelling, and ML retrain trigger UI (Product UI Styleguide)
-
 import { useState, useEffect } from "react";
-import { getReadingsHistory, labelReading, retrainModel } from "../api";
+import { 
+  getReadingsHistory, 
+  labelReading, 
+  retrainModel,
+  getRecordingStatus,
+  startRecordingSession,
+  stopRecordingSession
+} from "../api";
 import type { Reading, ClassificationLabel, Severity } from "../types";
 import { 
   Cpu, 
@@ -11,8 +15,11 @@ import {
   CheckCircle2, 
   Clock, 
   Layers, 
-  Sparkles,
-  Database
+  Sparkles, 
+  Database,
+  CircleDot,
+  Square,
+  FileSpreadsheet
 } from "lucide-react";
 
 const labelColors: Record<ClassificationLabel, string> = {
@@ -34,6 +41,22 @@ export default function AdminCalibrationView() {
   const [retrainResult, setRetrainResult] = useState<{ accuracy: number; falsePositiveDrop: number } | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
 
+  // Live CSV recording state
+  const [recStatus, setRecStatus] = useState<{
+    isRecording: boolean;
+    label: string;
+    sampleCount: number;
+    filename: string | null;
+    recordedFiles: string[];
+  }>({
+    isRecording: false,
+    label: "normal",
+    sampleCount: 0,
+    filename: null,
+    recordedFiles: []
+  });
+  const [selectedLabel, setSelectedLabel] = useState<string>("normal");
+
   const fetchHistory = async () => {
     setLoading(true);
     try {
@@ -46,9 +69,31 @@ export default function AdminCalibrationView() {
     }
   };
 
+  const refreshRec = async () => {
+    const status = await getRecordingStatus();
+    setRecStatus(status);
+  };
+
   useEffect(() => {
     fetchHistory();
+    refreshRec();
+    const interval = setInterval(refreshRec, 2000);
+    return () => clearInterval(interval);
   }, []);
+
+  const handleToggleRecording = async () => {
+    if (recStatus.isRecording) {
+      const res = await stopRecordingSession();
+      setSaveNotice(`Saved ${res.sampleCount ?? 0} samples to /data/${res.filename}`);
+      refreshRec();
+      setTimeout(() => setSaveNotice(null), 3000);
+    } else {
+      await startRecordingSession(selectedLabel);
+      setSaveNotice(`Started recording session [${selectedLabel}] to /data`);
+      refreshRec();
+      setTimeout(() => setSaveNotice(null), 3000);
+    }
+  };
 
   const handleLabelChange = async (readingId: string, label: ClassificationLabel) => {
     try {
@@ -101,6 +146,89 @@ export default function AdminCalibrationView() {
           <span>{saveNotice}</span>
         </div>
       )}
+
+      {/* Dataset Recording Studio Card */}
+      <div className="elevation-2 p-6 sm:p-8 rounded-3xl border border-[#E2E8F0]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#0E7054]">
+                Dataset Acquisition Studio
+              </span>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono ${
+                recStatus.isRecording ? "alert-pill-danger animate-pulse" : "alert-pill-success"
+              }`}>
+                {recStatus.isRecording ? `● RECORDING (${recStatus.sampleCount} SAMPLES)` : "IDLE"}
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#0F172A]">
+              Live Telemetry CSV Recording Mode
+            </h2>
+            <p className="text-xs text-[#64748B]">
+              Capture labeled hardware sessions directly into <code className="bg-[#ECEEF2] px-1.5 py-0.5 rounded text-[#0F172A] font-mono">/data/*.csv</code> for offline evaluation and detector benchmarking.
+            </p>
+          </div>
+
+          {/* Action buttons & label selection */}
+          <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+            {!recStatus.isRecording && (
+              <div className="flex items-center space-x-1.5 text-xs">
+                <span className="text-[#64748B] font-semibold">Label:</span>
+                <select
+                  value={selectedLabel}
+                  onChange={(e) => setSelectedLabel(e.target.value)}
+                  className="bg-[#FFFFFF] border border-[#CBD5E1] text-[#1E293B] text-xs font-semibold rounded-full px-3 py-1.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3E7D8]"
+                >
+                  <option value="normal">Normal Baseline (clean air)</option>
+                  <option value="steam">Steam (boiling kettle)</option>
+                  <option value="cooking">Cooking (kitchen frying aerosol)</option>
+                  <option value="gas">Gas (combustible leak)</option>
+                </select>
+              </div>
+            )}
+
+            <button
+              onClick={handleToggleRecording}
+              className={`px-5 py-2.5 rounded-full text-xs font-bold flex items-center space-x-2 transition shadow-sm ${
+                recStatus.isRecording
+                  ? "bg-[#EF4444] hover:bg-[#DC2626] text-white animate-pulse"
+                  : "btn-primary-mint"
+              }`}
+            >
+              {recStatus.isRecording ? (
+                <>
+                  <Square className="w-3.5 h-3.5" />
+                  <span>Stop Recording ({recStatus.sampleCount} samples)</span>
+                </>
+              ) : (
+                <>
+                  <CircleDot className="w-3.5 h-3.5 text-[#0E7054]" />
+                  <span>Start Recording Session</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Available Recorded Files in /data */}
+        <div className="mt-4 pt-3 border-t border-[#F1F3F6] flex flex-wrap items-center justify-between text-xs text-[#64748B]">
+          <div className="flex items-center space-x-1.5">
+            <FileSpreadsheet className="w-4 h-4 text-[#0E7054]" />
+            <span className="font-semibold text-[#0F172A]">Available Datasets in /data:</span>
+            <span className="font-mono text-[#64748B]">({recStatus.recordedFiles.length} files)</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 mt-1 sm:mt-0 font-mono text-[11px]">
+            {recStatus.recordedFiles.slice(0, 6).map((file, idx) => (
+              <span key={idx} className="bg-[#F1F5F9] border border-[#E2E8F0] px-2 py-0.5 rounded-md text-[#334155]">
+                {file}
+              </span>
+            ))}
+            {recStatus.recordedFiles.length > 6 && (
+              <span className="text-[#94A3B8] px-1 py-0.5">+{recStatus.recordedFiles.length - 6} more</span>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Header with Retrain Action */}
       <div className="elevation-2 p-6 sm:p-8 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-5">

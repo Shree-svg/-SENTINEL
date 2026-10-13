@@ -29,6 +29,7 @@
     "dev": "vite",
     "server": "node server/index.js",
     "bridge": "node server/index.js",
+    "evaluate": "node scripts/evaluate.js",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
