@@ -525,23 +525,43 @@ app.get('/api/hardware/status', (req, res) => {
   });
 });
 
-// 7a. POST /api/demo/enable
-app.post('/api/demo/enable', (req, res) => {
+// 7a. POST /api/demo/enable (and alias /api/demo/start)
+const handleDemoStart = (req, res) => {
   if (isRealDeviceActive() || isRealFirmwareAlarmActive()) {
     return res.status(409).json({ error: "Real device or firmware alarm active. Demo mode prohibited." });
   }
   try {
+    const { scenario } = req.body || {};
+    if (scenario && SCENARIO_INFO[scenario]) {
+      currentDemoScenario = scenario;
+    }
     startDemoMode();
     res.json({ ok: true, demoActive: true, scenario: currentDemoScenario });
   } catch (err) {
     res.status(409).json({ error: err.message });
   }
-});
+};
+app.post('/api/demo/enable', handleDemoStart);
+app.post('/api/demo/start', handleDemoStart);
 
-// 7b. POST /api/demo/disable
-app.post('/api/demo/disable', (req, res) => {
+// 7b. POST /api/demo/disable (and alias /api/demo/stop)
+const handleDemoStop = (req, res) => {
   stopDemoMode();
   res.json({ ok: true, demoActive: false });
+};
+app.post('/api/demo/disable', handleDemoStop);
+app.post('/api/demo/stop', handleDemoStop);
+
+// 7c. GET /api/demo/status
+app.get('/api/demo/status', (req, res) => {
+  res.json({
+    ok: true,
+    demoActive,
+    scenario: currentDemoScenario,
+    isRealDeviceActive: isRealDeviceActive(),
+    lossRate: demoLossRate,
+    corruptRate: demoCorruptRate
+  });
 });
 
 // 7c. POST /api/demo/scenario
