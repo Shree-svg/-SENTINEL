@@ -15,42 +15,76 @@
 
 Traditional residential gas detectors suffer from a dangerous failure mode known as **Alarm Fatigue**. Because low-cost metal-oxide semiconductor ($SnO_2$) sensors cross-react to ambient temperature fluctuations and relative humidity, benign everyday cooking steam frequently triggers false alarms. Consequently, occupants frequently disable or silence their detectors, creating severe life-safety hazards.
 
-**SENTINEL resolves this trade-off through four key architectural innovations:**
+**SENTINEL resolves this trade-off through five key architectural innovations:**
 
-1. **Multi-Sensor Environmental Correlation**:
-   Extracts a **7-variable dynamic feature vector** across gas concentration ($R_{gas}$), ambient temperature ($T$), and relative humidity ($RH$). By treating the **Humidity Rate of Change ($\Delta RH / \Delta t$) as a mathematical steam proxy**, the system suppresses steam-induced false alarms in software without desensitizing the sensor to genuine combustible leaks.
-2. **Dual-Plane Architecture (Zero-Trust Edge Fallback)**:
-   * **Firmware Plane (Arduino Nano ATmega328P)**: A deterministic, non-blocking 1.0-second actuation loop controls the physical piezo buzzer (`D8`) and beacon LED (`D9`). It executes unconditionally with **zero reliance** on host PC connectivity, Wi-Fi status, or cloud uptime.
-   * **Cyber Analytical Plane (Node.js + React)**: Multi-variable feature extraction, rolling trend sparklines, explainability factors, and automated caregiver SMS dispatch.
-3. **Concurrent Dual-Channel Telemetry**:
-   Transmits sensor frames simultaneously over **USB CDC (9600 baud)** for local high-resolution web telemetry and **HC-05 Bluetooth UART** for offline mobile triage by emergency responders.
-4. **Asymmetric Role-Gated Remote Caregiver Portal**:
-   Provides remote guardians with a read-only monitoring interface, one-touch **National Emergency Service (112)** dispatch, and architectural safeguards preventing accidental remote silencing of life-critical alarms.
-
----
-
-## 🔬 Mathematical Model & 7-Variable Feature Vector
-
-To reliably classify events without deep learning latency, SENTINEL computes a 7-dimensional spatio-temporal feature vector $\vec{X}_t$ over a sliding window ($W = 10\text{ s}$):
-
-$$\vec{X}_t = \Big[ R_{gas}(t),\, \frac{\Delta R_{gas}}{\Delta t},\, \overline{R_{gas}}_{[t-W, t]},\, T(t),\, \frac{\Delta T}{\Delta t},\, RH(t),\, \frac{\Delta RH}{\Delta t} \Big]^T$$
-
-| # | Feature Variable | Mathematical Formulation | Physical Domain Meaning |
-| :-: | :--- | :--- | :--- |
-| **1** | `rawGas` | $R_{gas}(t)$ | Instantaneous MQ-2 ADC sensor reading ($0 - 1023$) |
-| **2** | `rate_of_change_gas` | $\Delta R_{gas} / \Delta t = \frac{R(t) - R(t-1)}{\Delta t}$ | First derivative of gas concentration (surge vs steady drift) |
-| **3** | `rolling_avg_gas` | $\overline{R}_{10} = \frac{1}{N}\sum_{i=0}^{N-1} R(t-i)$ | Noise-filtered baseline to eliminate sensor jitter |
-| **4** | `temperature` | $T(t)$ | Instantaneous ambient temperature in °C |
-| **5** | `rate_of_change_temp` | $\Delta T / \Delta t$ | Thermal gradient (detects flash heating vs climate variation) |
-| **6** | `humidity` | $RH(t)$ | Instantaneous relative humidity in % |
-| **7** | `rate_of_change_hum` | $\Delta RH / \Delta t$ | **Steam proxy**: Cooking steam causes rapid $\Delta RH/\Delta t > +6.0\%/\text{s}$ |
-
-### Dynamic Steam Rejection Heuristic
-$$\text{Class} = \begin{cases} \text{Cooking Steam (Interference)}, & \text{if } \frac{\Delta RH}{\Delta t} \ge \theta_{hum} \text{ and } \frac{\Delta R_{gas}}{\Delta t} \ge \theta_{gas} \\ \text{Genuine Combustible Leak}, & \text{if } \frac{\Delta R_{gas}}{\Delta t} \ge \theta_{gas} \text{ and } \left|\frac{\Delta RH}{\Delta t}\right| < \theta_{hum} \\ \text{Normal Baseline}, & \text{otherwise} \end{cases}$$
+1. **Environmental Cross-Sensitivity Compensation**:
+   Real-time mathematical compensation ($K_{RH} = 5.2, K_T = 1.5$) eliminates humidity and temperature interference. Cooking steam is classified as `steam suppressed` without triggering nuisance sirens.
+2. **Predictive Time-to-Danger (TTD) Early Warning**:
+   A 10-sample rolling least-squares regression slope estimator tracks gas concentration trajectory, providing up to **+4.0 seconds of advance warning** before hazardous combustion thresholds are breached.
+3. **5-Stage Controlled Escalation State Machine**:
+   Predictable progression (`NORMAL → WARNING → ALARM → ESCALATED → EMERGENCY`) with 15-second caregiver SMS and 30-second national emergency (112) prompts, backed by local occupant acknowledgment (`pipe.ack()`).
+4. **Dual-Tier Architecture with Zero-Trust Edge Safety Floor**:
+   * **Firmware Plane (Arduino Nano ATmega328P)**: Autonomous 1.0s non-blocking loop controlling physical piezo buzzer (`D8`) and LED (`D9`). Operates unconditionally with **zero reliance** on host PC connectivity, Wi-Fi status, or cloud uptime.
+   * **Cyber Analytical Plane (Node.js + React 19)**: Multi-variable feature extraction, rolling trend sparklines, explainability factors, and automated caregiver alerts.
+5. **Interactive Demo Simulation & Benchmark Evaluation Harness**:
+   Built-in ephemeral demo mode with realistic synthetic scenarios (`steam`, `cooking`, `gas_leak`, `normal`, `adc_saturation`, `sensor_fault`) and an offline dataset replay evaluation suite (`npm run evaluate`).
 
 ---
 
-## 🏗️ System Architecture
+## 🔬 Mathematical Model & Formulation
+
+### 1. Dynamic Environmental Cross-Sensitivity Compensation
+The raw conductance of metal-oxide semiconductor gas sensors ($SnO_2$) varies significantly with ambient humidity ($RH$) and temperature ($T$). SENTINEL computes a compensated gas residual $R_{comp}(t)$:
+
+$$R_{comp}(t) = R_{raw}(t) - \Big( K_{RH} \cdot \big(RH(t) - RH_0\big) + K_T \cdot \big(T(t) - T_0\big) \Big)$$
+
+Where:
+- $R_{raw}(t)$ = Instantaneous MQ-2 ADC reading ($0 - 1023$).
+- $RH_0, T_0$ = Calibrated baseline environmental conditions.
+- $K_{RH} = 5.2\text{ ADC/\%RH}$ = Empirical humidity cross-sensitivity gain.
+- $K_T = 1.5\text{ ADC/°C}$ = Empirical thermal cross-sensitivity gain.
+
+### 2. 10-Sample Rolling Least-Squares Slope Estimation
+To detect early gas accumulation before reaching dangerous concentrations, the pipeline calculates the linear rate of change over a rolling window $N = 10$:
+
+$$m = \frac{N \sum (t_i \cdot R_i) - \big(\sum t_i\big)\big(\sum R_i\big)}{N \sum t_i^2 - \big(\sum t_i\big)^2}$$
+
+### 3. Predictive Time-to-Danger (TTD)
+When an ascending gas trajectory is detected ($m > 0$), the time remaining before reaching the critical hazard threshold $\theta_{danger} = 450\text{ ADC}$ is estimated:
+
+$$t_{danger} = \begin{cases} \dfrac{\theta_{danger} - R_{comp}(t)}{m}, & \text{if } m > 1.0\text{ ADC/s} \text{ and } R_{comp}(t) < \theta_{danger} \\ 0\text{ s}, & \text{if } R_{comp}(t) \ge \theta_{danger} \\ \infty, & \text{otherwise} \end{cases}$$
+
+---
+
+## 📊 Empirical Benchmark Evaluation Results
+
+Run the built-in headless evaluation harness across empirical kitchen datasets:
+```bash
+npm run evaluate
+```
+
+### Benchmark Summary: Plain Static Threshold vs. SENTINEL Pipeline
+
+```
+========================================================================================================================
+Scenario        Ground Truth  | [PLAIN] Alarm   FA?   Miss?   Lead(s)   | [COMPENSATED] Alarm   FA?   Miss?   Lead(s)
+------------------------------------------------------------------------------------------------------------------------
+cooking         NON-HAZARD    | YES (8s)        🔴 YESNO      N/A       | NO                    🟢 NO 🟢 NO   N/A
+gas             GAS LEAK      | YES (17s)       NO    NO      5s        | YES (21s)             🟢 NO 🟢 NO   ⚡ 9s
+normal          NON-HAZARD    | NO              NO    NO      N/A       | NO                    🟢 NO 🟢 NO   N/A
+steam           NON-HAZARD    | YES (11s)       🔴 YESNO      N/A       | NO                    🟢 NO 🟢 NO   N/A
+========================================================================================================================
+```
+
+| Evaluation Metric | Plain Static Threshold (300 ADC) | SENTINEL Compensated Pipeline | Architectural Benefit |
+| :--- | :---: | :---: | :--- |
+| **False Alarms (Cooking / Steam)** | 2 false alarms | **0 false alarms** | **-100% false alarm rate** (eliminates nuisance triggers) |
+| **Missed Detections (Leaks)** | 0 missed | **0 missed** | **Zero safety compromise** |
+| **Early Warning Lead Time** | 5.0 seconds | **9.0 seconds** | **+4.0s advance warning** via 10-sample slope projection |
+
+---
+
+## 🏗️ Cyber-Physical System Topology
 
 ```
                           ┌─────────────────────────────────────────┐
@@ -71,25 +105,36 @@ $$\text{Class} = \begin{cases} \text{Cooking Steam (Interference)}, & \text{if }
                    USB CDC (9600 Bd) │                      │ HC-05 Bluetooth (9600 Bd)
                                      ▼                      ▼
     ┌───────────────────────────────────────────────┐  ┌────────────────────────┐
-    │     CYBER ANALYTICAL PLANE (Node.js Engine)   │  │  OFFLINE FIELD TRIAGE  │
+    │       TELEMETRY INGESTION & DEMO BRIDGE       │  │  OFFLINE FIELD TRIAGE  │
     │ ───────────────────────────────────────────── │  │ (Mobile Responder App) │
     │ • Auto-Reconnect Serial Watchdog (2s scan)    │  └────────────────────────┘
-    │ • 7-Variable Feature Extractor                │
-    │ • Dynamic Rolling Buffer (10-sample avg)      │
-    │ • Multi-Channel Escalation (SMS & SMTP Email) │
-    │ • Express REST / SSE Ingestion Bridge (:3001) │
+    │ • Telemetry Frame Parser & Checksum Validator │
+    │ • Ephemeral Demo Simulator (demoSimulator.js) │
+    │ • Real-Data-Wins Hardware Priority Preemptor  │
+    │ • Express REST Ingestion API (:3001)          │
     └───────────────────────┬───────────────────────┘
                             │
                             ▼
     ┌───────────────────────────────────────────────────────────────────────────┐
-    │                       DASHBOARD & TELEMETRY LAYER                         │
-    │                                                                           │
-    │  ┌──────────────────────────────┐        ┌─────────────────────────────┐  │
-    │  │   RESIDENT / LOCAL VIEW      │        │  CAREGIVER REMOTE PORTAL    │  │
-    │  │  • Real-Time Gauge Sparklines│        │ • Asymmetric Read-Only Tele │  │
-    │  │  • Bidirectional Buzzer Test │        │ • SOS 112 Emergency Dialer │  │
-    │  │  • Hardware Calibration UI   │        │ • Granular Access Revocation│  │
-    │  └──────────────────────────────┘        └─────────────────────────────┘  │
+    │              CYBER ANALYTICAL PIPELINE (src/sim/pipeline.ts)              │
+    │ ───────────────────────────────────────────────────────────────────────── │
+    │ • Dynamic Baseline Tracker (RH_0, T_0 calibration window)                 │
+    │ • Least-Squares Slope Estimator (10-sample rolling regression)            │
+    │ • Predictive Time-to-Danger (TTD) Estimator                               │
+    │ • 5-Stage Escalation FSM: NORMAL → WARNING → ALARM → ESCALATED → EMERGENCY│
+    │ • Local Acknowledgment Dampener (pipe.ack())                              │
+    └───────────────────────┬───────────────────────────────────────────────────┘
+                            │
+                            ▼
+    ┌───────────────────────────────────────────────────────────────────────────┐
+    │                        UNIFIED DASHBOARD & UI LAYER                       │
+    │ ───────────────────────────────────────────────────────────────────────── │
+    │ • Resident Live Monitor (Dynamic Classification Banner, Dual-Trace SVG)   │
+    │ • Compensated Residual & Predictive Time-to-Danger telemetry cards        │
+    │ • Escalation Stepper with live countdowns & Local Acknowledge button      │
+    │ • Ephemeral Demo Simulator Bar (Scenario selector & Ground-Truth table)   │
+    │ • Remote Caregiver Portal (Asymmetric read-only with emergency dispatch)  │
+    │ • Admin Calibration & Model Retraining Workbench                          │
     └───────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -108,33 +153,49 @@ $$\text{Class} = \begin{cases} \text{Cooking Steam (Interference)}, & \text{if }
 
 ---
 
+## 🛡️ Cyber-Physical Safety Invariants
+
+1. **Zero-Interference Safety Floor**:
+   The physical microcontroller firmware evaluates raw ADC readings directly in hardware and actuates Pin `D8` buzzer independently. Software crashes, network latency, or simulation commands can **never** silence or override the physical safety alarm.
+2. **Real-Data-Wins Priority**:
+   If a valid real sensor packet arrives over USB serial while demo simulation is active, the backend immediately terminates synthetic streaming, switches the UI toggle to OFF, and displays `"Real device detected: demo mode stopped"`.
+3. **Simulation Action Sandboxing**:
+   While simulation mode is active, all real SMS, email, and 112 telephony dispatch calls are strictly suppressed. Actions produce visual UI toasts (`"SMS to caregiver (simulated)"`) and simulation log entries.
+
+---
+
 ## 📁 Repository Layout
 
 ```
 .
-├── .github/
-│   ├── ISSUE_TEMPLATE/            # GitHub issue templates (Bug Report, Feature Request)
-│   ├── workflows/ci.yml           # Automated CI workflow (TypeScript validation & Vite build)
-│   └── pull_request_template.md   # Standardized Pull Request template
+├── .github/                       # GitHub issue templates & automated CI workflows
+├── data/                          # Empirical benchmark datasets (cooking, steam, leak)
+│   ├── cooking_steam.json
+│   ├── rapid_leak.json
+│   └── slow_drift.json
 ├── docs/                          # Architectural & Engineering Documentation
-│   ├── ARCHITECTURE.md            # System architecture, schemas, and endpoint specs
-│   ├── CODE_OF_CONDUCT.md         # Contributor Covenant Code of Conduct
-│   ├── CONTRIBUTING.md            # Contributor guidelines and workflow
+│   ├── ARCHITECTURE.md            # In-depth architectural specification & FSM formulas
+│   ├── PRODUCT.md                 # Product specifications & clinical/academic requirements
 │   ├── DESIGN.md                  # UI/UX design tokens & styling guide
-│   ├── Memory.md                  # Technical decisions & engineering history
-│   ├── PRODUCT.md                 # Product requirements & user stories
-│   ├── README.md                  # Project overview & architecture summary
 │   ├── SECURITY.md                # Zero-trust safety policy & vulnerability reporting
-│   └── implementation_plan.md     # Implementation roadmap
+│   ├── CONTRIBUTING.md            # Contributor guidelines
+│   └── CODE_OF_CONDUCT.md         # Contributor Covenant
 ├── firmware/                      # Embedded C++ Microcontroller Firmware
 │   └── sentinel_firmware/
 │       └── sentinel_firmware.ino  # Production Arduino sketch (9600 baud + Bluetooth)
-├── server/                        # Backend Serial Ingestion Bridge
-│   └── index.js                   # Node.js + Express serial watchdog daemon
+├── scripts/
+│   └── evaluate.js                # Headless cyber-physical benchmark runner
+├── server/                        # Backend Ingestion Bridge & Demo Simulator
+│   ├── index.js                   # Node.js + Express serial watchdog daemon
+│   └── demoSimulator.js           # Ephemeral synthetic telemetry generator
 ├── src/                           # Frontend React 19 Dashboard
 │   ├── api/                       # Typed REST API client
-│   ├── components/                # Modular UI components (LiveStatus, Caregiver, etc.)
-│   ├── hooks/                     # Custom hooks (usePolling, useReadingHistory)
+│   ├── components/                # UI components (LiveStatusPanel, AlertHistoryList, etc.)
+│   ├── hooks/                     # Custom hooks (usePipeline, usePolling, useReadingHistory)
+│   ├── sim/                       # Analytical pipeline & simulation engine
+│   │   ├── pipeline.ts            # Reusable mathematical compensation & escalation FSM
+│   │   └── SimulationPanel.tsx    # Scenario injection & ground-truth comparison table
+│   ├── views/                     # CaregiverView, AdminCalibrationView
 │   └── types/                     # TypeScript data interfaces
 ├── LICENSE                        # MIT License
 └── package.json                   # Project metadata and dependencies
@@ -147,7 +208,7 @@ $$\text{Class} = \begin{cases} \text{Cooking Steam (Interference)}, & \text{if }
 ### 1. Prerequisites
 - **Node.js**: v18.0.0+
 - **Arduino IDE / Arduino CLI** (for flashing microcontroller firmware)
-- **Target Hardware**: Arduino Nano (ATmega328P), MQ-2, DHT11, Piezo Buzzer, LED, HC-05
+- **Target Hardware (Optional for Demo Mode)**: Arduino Nano (ATmega328P), MQ-2, DHT11, Piezo Buzzer, LED, HC-05
 
 ### 2. Install Dependencies
 ```bash
@@ -156,14 +217,13 @@ cd -SENTINEL
 npm install
 ```
 
-### 3. Flash Arduino Firmware
-1. Open [`firmware/sentinel_firmware/sentinel_firmware.ino`](../firmware/sentinel_firmware/sentinel_firmware.ino) in the Arduino IDE.
-2. In the Library Manager (`Tools > Manage Libraries`), confirm **DHT sensor library by Adafruit** is installed.
-3. Select **Board**: `Arduino Nano` (Processor: `ATmega328P` or `ATmega328P (Old Bootloader)`).
-4. Select your USB port (`/dev/cu.usbserial-*` or `COM*`) and click **Upload**.
+### 3. Run Benchmark Evaluation Suite
+```bash
+npm run evaluate
+```
 
-### 4. Launch Bridge Server & Dashboard
-In terminal 1 (Hardware Ingestion Bridge):
+### 4. Launch Backend Server & Dashboard
+In terminal 1 (Hardware Ingestion Bridge & Demo Simulator):
 ```bash
 npm run server
 ```
@@ -175,11 +235,20 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
+> **💡 No Hardware? Try Demo Mode!**  
+> If no physical Arduino is connected, toggle **"Demo readings"** in the top navigation bar. Select scenarios like **Steam**, **Cooking**, or **Combustible Gas Leak** to observe real-time dynamic compensation and predictive early warnings.
+
+### 5. Flash Arduino Firmware (For Real Hardware)
+1. Open [`firmware/sentinel_firmware/sentinel_firmware.ino`](../firmware/sentinel_firmware/sentinel_firmware.ino) in Arduino IDE.
+2. Install **DHT sensor library by Adafruit** via Library Manager (`Tools > Manage Libraries`).
+3. Select Board: `Arduino Nano` (Processor: `ATmega328P`).
+4. Select your USB port (`/dev/cu.usbserial-*` or `COM*`) and click **Upload**.
+
 ---
 
 ## 🧪 Continuous Integration & Verification
 
-All commits and pull requests are validated using GitHub Actions:
+All commits and pull requests are verified using GitHub Actions:
 
 ```bash
 # Typecheck TypeScript & compile production Vite bundle
@@ -187,6 +256,9 @@ npm run build
 
 # Run fast static analysis linter
 npm run lint
+
+# Run cyber-physical benchmark replay
+npm run evaluate
 ```
 
 ---
@@ -200,7 +272,7 @@ npm run lint
 
 ---
 
-## 👤 Author
+## 👤 Author & Academic Affiliation
 
 * **Lead Architect & Developer**: **Shreedhar Sharma**
 * **Institution**: Vellore Institute of Technology (VIT), Chennai
