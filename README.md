@@ -203,9 +203,7 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 │   ├── DESIGN.md                  # UI/UX design tokens & styling guide
 │   ├── PRODUCT.md                 # Product specifications & clinical/academic requirements
 │   ├── SECURITY.md                # Zero-trust safety policy, localhost binding & hardening
-│   ├── IMPLEMENTATION_PLAN.md     # Comprehensive engineering audit & execution plan
-│   ├── FINAL_SUBMISSION_CHECKLIST.md # Final submission verification audit
-│   ├── diagrams/                  # System Design Diagram Suite (Mermaid & ASCII)
+│   ├── diagrams/                  # System Design Diagram Suite (Mermaid & PNG)
 │   │   ├── 5.1_system_architecture.md
 │   │   ├── 5.2_use_case_diagram.md
 │   │   ├── 5.3_class_diagram.md
@@ -214,16 +212,12 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 │   │   ├── 5.6_ui_wireframes.md
 │   │   └── README.md
 │   ├── report/                    # Formal Academic Submission Report Suite
-│   │   ├── SENTINEL_Project_Report.md # Complete 10-Chapter Project Report
 │   │   ├── SRS.md                 # Formal Software Requirements Spec (ISO/IEC/IEEE 29148)
 │   │   ├── SDLC_PLAN.md           # CPS Process Model & 14-Week Schedule (Mermaid Gantt)
 │   │   ├── RISK_ANALYSIS.md       # Cyber-Physical Risk Matrix & FMEA Analysis
 │   │   ├── TEST_PLAN.md           # Formal Verification Strategy (IEEE 829 / TC01–TC13)
-│   │   ├── TEST_RESULTS.md        # Reproducible Test Logs, Benchmark & Bug Log
-│   │   ├── TOOLS_USED.md          # 7 Software Engineering Tools with Evidence
-│   │   ├── REFERENCES.md          # Verified IEEE Citations with Real DOIs
-│   │   └── DEMO_VIDEO_SCRIPT.md   # 4–6 Minute Video Walkthrough Script
-│   ├── screenshots/               # High-Resolution Live Application UI Screenshots
+│   │   ├── TOOLS_USED.md          # Software Engineering Tools with Evidence
+│   │   └── REFERENCES.md          # Verified IEEE Citations with Real DOIs
 │   ├── CONTRIBUTING.md            # Contributor guidelines
 │   └── CODE_OF_CONDUCT.md         # Contributor Covenant
 ├── firmware/                      # Embedded C++ Microcontroller Firmware
