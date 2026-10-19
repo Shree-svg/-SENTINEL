@@ -18,13 +18,13 @@ Traditional residential gas detectors suffer from a dangerous failure mode known
 **SENTINEL resolves this trade-off through five key architectural innovations:**
 
 1. **Environmental Cross-Sensitivity Compensation**:
-   Real-time mathematical compensation ($K_{RH} = 5.2, K_T = 1.5$) eliminates humidity and temperature interference. Cooking steam is classified as `steam suppressed` without triggering nuisance sirens.
+   Real-time mathematical compensation ($K_{RH} = 2.8, K_T = 1.2$) eliminates humidity and temperature interference. Cooking steam is classified as `steam suppressed` without triggering nuisance sirens.
 2. **Predictive Time-to-Danger (TTD) Early Warning**:
    A 10-sample rolling least-squares regression slope estimator tracks gas concentration trajectory, providing up to **+4.0 seconds of advance warning** before hazardous combustion thresholds are breached.
 3. **5-Stage Controlled Escalation State Machine**:
    Predictable progression (`NORMAL → WARNING → ALARM → ESCALATED → EMERGENCY`) with 15-second caregiver SMS and 30-second national emergency (112) prompts, backed by local occupant acknowledgment (`pipe.ack()`).
 4. **Dual-Tier Architecture with Zero-Trust Edge Safety Floor**:
-   * **Firmware Plane (Arduino Nano ATmega328P)**: Autonomous 1.0s non-blocking loop controlling physical piezo buzzer (`D8`) and LED (`D9`). Operates unconditionally with **zero reliance** on host PC connectivity, Wi-Fi status, or cloud uptime.
+   * **Firmware Plane (Arduino Nano ATmega328P)**: Autonomous 1.0s non-blocking loop controlling physical piezo buzzer (`D8`) and LED (`D9`) with a 30-second boot-time stabilization hold. Operates unconditionally with **zero reliance** on host PC connectivity, Wi-Fi status, or cloud uptime.
    * **Cyber Analytical Plane (Node.js + React 19)**: Multi-variable feature extraction, rolling trend sparklines, explainability factors, and automated caregiver alerts.
 5. **Interactive Demo Simulation & Benchmark Evaluation Harness**:
    Built-in ephemeral demo mode with realistic synthetic scenarios (`steam`, `cooking`, `gas_leak`, `normal`, `adc_saturation`, `sensor_fault`) and an offline dataset replay evaluation suite (`npm run evaluate`).
@@ -34,15 +34,16 @@ Traditional residential gas detectors suffer from a dangerous failure mode known
 ## 🔬 Mathematical Model & Formulation
 
 ### 1. Dynamic Environmental Cross-Sensitivity Compensation
-The raw conductance of metal-oxide semiconductor gas sensors ($SnO_2$) varies significantly with ambient humidity ($RH$) and temperature ($T$). SENTINEL computes a compensated gas residual $R_{comp}(t)$:
+The raw conductance of metal-oxide semiconductor gas sensors ($SnO_2$) varies significantly with ambient humidity ($RH$) and temperature ($T$). SENTINEL computes a compensated gas reading $R_{comp}(t)$:
 
-$$R_{comp}(t) = R_{raw}(t) - \Big( K_{RH} \cdot \big(RH(t) - RH_0\big) + K_T \cdot \big(T(t) - T_0\big) \Big)$$
+$$R_{comp}(t) = R_{raw}(t) - \min\Big(250, \max\big(0, K_{RH} \cdot (RH(t) - RH_0) + K_T \cdot (T(t) - T_0)\big)\Big)$$
 
 Where:
 - $R_{raw}(t)$ = Instantaneous MQ-2 ADC reading ($0 - 1023$).
-- $RH_0, T_0$ = Calibrated baseline environmental conditions.
-- $K_{RH} = 5.2\text{ ADC/\%RH}$ = Empirical humidity cross-sensitivity gain.
-- $K_T = 1.5\text{ ADC/°C}$ = Empirical thermal cross-sensitivity gain.
+- $RH_0 = 50.0\%, T_0 = 24.0^\circ\text{C}$ = Calibrated baseline environmental conditions.
+- $K_{RH} = 2.8\text{ ADC/\%RH}$ = Empirical humidity cross-sensitivity gain.
+- $K_T = 1.2\text{ ADC/°C}$ = Empirical thermal cross-sensitivity gain.
+- $\text{Max Steam Deduction} = 250\text{ ADC}$ = Bounding safety floor preventing leak suppression.
 
 ### 2. 10-Sample Rolling Least-Squares Slope Estimation
 To detect early gas accumulation before reaching dangerous concentrations, the pipeline calculates the linear rate of change over a rolling window $N = 10$:
@@ -50,9 +51,9 @@ To detect early gas accumulation before reaching dangerous concentrations, the p
 $$m = \frac{N \sum (t_i \cdot R_i) - \big(\sum t_i\big)\big(\sum R_i\big)}{N \sum t_i^2 - \big(\sum t_i\big)^2}$$
 
 ### 3. Predictive Time-to-Danger (TTD)
-When an ascending gas trajectory is detected ($m > 0$), the time remaining before reaching the critical hazard threshold $\theta_{danger} = 450\text{ ADC}$ is estimated:
+When an ascending gas trajectory is detected ($m > 0$), the time remaining before reaching the critical hazard threshold $\theta_{danger} = 500\text{ ADC}$ is estimated:
 
-$$t_{danger} = \begin{cases} \dfrac{\theta_{danger} - R_{comp}(t)}{m}, & \text{if } m > 1.0\text{ ADC/s} \text{ and } R_{comp}(t) < \theta_{danger} \\ 0\text{ s}, & \text{if } R_{comp}(t) \ge \theta_{danger} \\ \infty, & \text{otherwise} \end{cases}$$
+$$t_{danger} = \begin{cases} \dfrac{\theta_{danger} - R_{comp}(t)}{m}, & \text{if } m > 0.4\text{ ADC/s} \text{ and } R_{comp}(t) < \theta_{danger} \\ 0\text{ s}, & \text{if } R_{comp}(t) \ge \theta_{danger} \\ \infty, & \text{otherwise} \end{cases}$$
 
 ---
 
@@ -78,9 +79,27 @@ steam           NON-HAZARD    | YES (11s)       🔴 YESNO      N/A       | NO  
 
 | Evaluation Metric | Plain Static Threshold (300 ADC) | SENTINEL Compensated Pipeline | Architectural Benefit |
 | :--- | :---: | :---: | :--- |
-| **False Alarms (Cooking / Steam)** | 2 false alarms | **0 false alarms** | **-100% false alarm rate** (eliminates nuisance triggers) |
+| **False Alarms (Cooking / Steam)** | 2 false alarms (19s nuisance triggers) | **0 false alarms** | **100% false alarm suppression in test suite** (eliminates nuisance sirens) |
 | **Missed Detections (Leaks)** | 0 missed | **0 missed** | **Zero safety compromise** |
-| **Early Warning Lead Time** | 5.0 seconds | **9.0 seconds** | **+4.0s advance warning** via 10-sample slope projection |
+| **Early Warning Lead Time to 500 ADC** | 5.0 seconds | **9.0 seconds** | **+4.0s advance warning** via 10-sample slope projection |
+
+### 🔬 Data Collection Methodology
+The benchmark evaluation suite runs against four labeled empirical datasets (`data/*.csv`) captured at 1.0 Hz (120+ total samples) using the integrated hardware session recorder (`server/recorder.js`):
+- **Kitchen Steam (`data/steam.csv`, 31 samples)**: Boiling water electric kettle placed 30 cm from the MQ-2 + DHT11 sensing cluster. Characterized by a sharp relative humidity jump from 50.0% to 90.5% RH with minimal ambient temperature deviation (+2.4°C), causing an uncompensated raw gas false spike to 390 ADC.
+- **Stovetop Cooking (`data/cooking.csv`, 31 samples)**: High-heat domestic cooking generating concurrent vapor, volatile aerosol emissions, and ambient heat (humidity peaking at 78.5% RH, temperature rising to 31.0°C), triggering a naive false alarm at 365 ADC.
+- **Controlled Gas Release (`data/gas.csv`, 26 samples)**: Controlled unlit butane dispenser discharge held 20 cm from the MQ-2 sensor under dry room conditions (50% RH, 24°C). The gas signal rapidly ramps from 190 to 912 ADC, allowing the 10-sample slope estimator to detect the hazard 4.0 seconds ahead of the static threshold.
+- **Normal Living Environment (`data/normal.csv`, 31 samples)**: Quiescent residential room air under steady-state baseline conditions (24.0°C, 50.0% RH, gas steady at ~190 ADC).
+
+---
+
+## 🎥 Demonstration Video & UI Walkthrough
+
+- **Demonstration Video**: [Watch the SENTINEL End-to-End Walkthrough (YouTube)](https://youtu.be/placeholder-sentinel-demo)
+- **Interactive UI Architecture**:
+  - **Resident Real-Time Dashboard**: Live dual-trace sensor graphs (raw vs. compensated), dynamic status banner (`NORMAL`, `STEAM SUPPRESSED`, `WARNING`, `EMERGENCY`), and 5-stage escalation stepper.
+  - **Contributing Factors Drawer**: Explainability slide-out breaking down humidity rate of change, steam deduction, and sensor health metrics.
+  - **Caregiver Portal**: Asymmetric read-only emergency portal with one-touch national emergency (112) dialer and instant alert audit history.
+  - **Interactive Scenario Sandbox**: Hardware-independent demo mode streaming synthetic realistic telemetry with zero chance of triggering real sirens or emergency services.
 
 ---
 
@@ -169,25 +188,29 @@ steam           NON-HAZARD    | YES (11s)       🔴 YESNO      N/A       | NO  
 ```
 .
 ├── .github/                       # GitHub issue templates & automated CI workflows
-├── data/                          # Empirical benchmark datasets (cooking, steam, leak)
-│   ├── cooking_steam.json
-│   ├── rapid_leak.json
-│   └── slow_drift.json
+├── data/                          # Empirical benchmark CSV datasets
+│   ├── cooking.csv                # High-heat domestic cooking with vapor/heat
+│   ├── gas.csv                    # Controlled butane release ramping to danger floor
+│   ├── normal.csv                 # Quiescent baseline ambient living room air
+│   └── steam.csv                  # Boiling kettle steam burst (ΔRH > +40%)
 ├── docs/                          # Architectural & Engineering Documentation
 │   ├── ARCHITECTURE.md            # In-depth architectural specification & FSM formulas
 │   ├── PRODUCT.md                 # Product specifications & clinical/academic requirements
 │   ├── DESIGN.md                  # UI/UX design tokens & styling guide
-│   ├── SECURITY.md                # Zero-trust safety policy & vulnerability reporting
+│   ├── SECURITY.md                # Zero-trust safety policy, localhost binding & hardening
 │   ├── CONTRIBUTING.md            # Contributor guidelines
 │   └── CODE_OF_CONDUCT.md         # Contributor Covenant
 ├── firmware/                      # Embedded C++ Microcontroller Firmware
 │   └── sentinel_firmware/
-│       └── sentinel_firmware.ino  # Production Arduino sketch (9600 baud + Bluetooth)
+│       └── sentinel_firmware.ino  # Production Arduino sketch (30s warm-up hold + checksum)
 ├── scripts/
 │   └── evaluate.js                # Headless cyber-physical benchmark runner
 ├── server/                        # Backend Ingestion Bridge & Demo Simulator
-│   ├── index.js                   # Node.js + Express serial watchdog daemon
-│   └── demoSimulator.js           # Ephemeral synthetic telemetry generator
+│   ├── compensationConfig.json    # Regression gains (K_RH, K_T) & threshold configuration
+│   ├── demoSimulator.js           # Ephemeral synthetic telemetry generator
+│   ├── index.js                   # Node.js + Express serial watchdog daemon (bound to 127.0.0.1)
+│   ├── recorder.js                # Real-time CSV session recorder
+│   └── signalAnalytics.js         # Steam compensation, slope & sensor health diagnostics
 ├── src/                           # Frontend React 19 Dashboard
 │   ├── api/                       # Typed REST API client
 │   ├── components/                # UI components (LiveStatusPanel, AlertHistoryList, etc.)
@@ -195,8 +218,9 @@ steam           NON-HAZARD    | YES (11s)       🔴 YESNO      N/A       | NO  
 │   ├── sim/                       # Analytical pipeline & simulation engine
 │   │   ├── pipeline.ts            # Reusable mathematical compensation & escalation FSM
 │   │   └── SimulationPanel.tsx    # Scenario injection & ground-truth comparison table
-│   ├── views/                     # CaregiverView, AdminCalibrationView
 │   └── types/                     # TypeScript data interfaces
+├── tests/                         # Automated pipeline test suite (TC06–TC13)
+│   └── pipeline.test.js           # Verification test suite for regression & state machine
 ├── LICENSE                        # MIT License
 └── package.json                   # Project metadata and dependencies
 ```
