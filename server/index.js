@@ -29,8 +29,23 @@ import {
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const HOST = process.env.HOST || '127.0.0.1'; // Bind to localhost by default to prevent unauthorized network exposure
 
-app.use(cors());
+// Restrict CORS to local development dashboard origins
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+  : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://127.0.0.1:3000'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow non-browser agents, local scripts, or approved localhost dashboard origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // --- TELEMETRY & CLASSIFICATION STATE ---
@@ -633,10 +648,10 @@ app.post('/api/recording/stop', (req, res) => {
   res.json(result);
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, HOST, () => {
   console.log(`=======================================================`);
-  console.log(`🚀 SENTINEL Hardware Bridge running on port ${PORT}`);
+  console.log(`🚀 SENTINEL Hardware Bridge running on http://${HOST}:${PORT}`);
   console.log(`📡 Auto-reconnect watchdog active: scanning USB ports...`);
-  console.log(`🛡️ Strict hardware mode: NO synthetic fake telemetry.`);
+  console.log(`🛡️ Hardware Priority Engine: Live telemetry takes precedence over demo mode.`);
   console.log(`=======================================================`);
 });
