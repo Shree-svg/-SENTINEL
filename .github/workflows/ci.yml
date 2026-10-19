@@ -28,5 +28,11 @@ jobs:
       - name: Verify TypeScript compilation
         run: npx tsc -b
 
+      - name: Run automated test suite (TC06–TC13)
+        run: npm test
+
+      - name: Run empirical dataset evaluation benchmark
+        run: npm run evaluate
+
       - name: Build production bundle
         run: npx vite build
