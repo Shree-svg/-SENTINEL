@@ -194,11 +194,32 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 │   ├── gas.csv                    # Controlled butane release ramping to danger floor
 │   ├── normal.csv                 # Quiescent baseline ambient living room air
 │   └── steam.csv                  # Boiling kettle steam burst (ΔRH > +40%)
-├── docs/                          # Architectural & Engineering Documentation
+├── docs/                          # Engineering & Academic Documentation
 │   ├── ARCHITECTURE.md            # In-depth architectural specification & FSM formulas
-│   ├── PRODUCT.md                 # Product specifications & clinical/academic requirements
 │   ├── DESIGN.md                  # UI/UX design tokens & styling guide
+│   ├── PRODUCT.md                 # Product specifications & clinical/academic requirements
 │   ├── SECURITY.md                # Zero-trust safety policy, localhost binding & hardening
+│   ├── IMPLEMENTATION_PLAN.md     # Comprehensive engineering audit & execution plan
+│   ├── FINAL_SUBMISSION_CHECKLIST.md # Final submission verification audit
+│   ├── diagrams/                  # System Design Diagram Suite (Mermaid & ASCII)
+│   │   ├── 5.1_system_architecture.md
+│   │   ├── 5.2_use_case_diagram.md
+│   │   ├── 5.3_class_diagram.md
+│   │   ├── 5.4_sequence_activity_diagrams.md
+│   │   ├── 5.5_er_diagram.md
+│   │   ├── 5.6_ui_wireframes.md
+│   │   └── README.md
+│   ├── report/                    # Formal Academic Submission Report Suite
+│   │   ├── SENTINEL_Project_Report.md # Complete 10-Chapter Project Report
+│   │   ├── SRS.md                 # Formal Software Requirements Spec (ISO/IEC/IEEE 29148)
+│   │   ├── SDLC_PLAN.md           # CPS Process Model & 14-Week Schedule (Mermaid Gantt)
+│   │   ├── RISK_ANALYSIS.md       # Cyber-Physical Risk Matrix & FMEA Analysis
+│   │   ├── TEST_PLAN.md           # Formal Verification Strategy (IEEE 829 / TC01–TC13)
+│   │   ├── TEST_RESULTS.md        # Reproducible Test Logs, Benchmark & Bug Log
+│   │   ├── TOOLS_USED.md          # 7 Software Engineering Tools with Evidence
+│   │   ├── REFERENCES.md          # Verified IEEE Citations with Real DOIs
+│   │   └── DEMO_VIDEO_SCRIPT.md   # 4–6 Minute Video Walkthrough Script
+│   ├── screenshots/               # High-Resolution Live Application UI Screenshots
 │   ├── CONTRIBUTING.md            # Contributor guidelines
 │   └── CODE_OF_CONDUCT.md         # Contributor Covenant
 ├── firmware/                      # Embedded C++ Microcontroller Firmware
@@ -220,8 +241,10 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 │   │   ├── pipeline.ts            # Reusable mathematical compensation & escalation FSM
 │   │   └── SimulationPanel.tsx    # Scenario injection & ground-truth comparison table
 │   └── types/                     # TypeScript data interfaces
-├── tests/                         # Automated pipeline test suite (TC06–TC13)
-│   └── pipeline.test.js           # Unit tests verifying warm-up, steam suppression, slope & FSM
+├── tests/                         # Automated test suite (TC01–TC13)
+│   ├── api.test.js                # Checksum, protocol, simulator & REST API tests (TC01–TC05)
+│   └── pipeline.test.js           # Analytical pipeline, steam suppression & FSM tests (TC06–TC13)
+├── .env.example                   # Environment configuration template
 ├── LICENSE                        # MIT License
 └── package.json                   # Project metadata and dependencies
 ```
@@ -283,7 +306,7 @@ All commits and pull requests are verified using GitHub Actions:
 # 1. Run fast static analysis linter
 npm run lint
 
-# 2. Run automated pipeline verification tests (TC06–TC13)
+# 2. Run automated pipeline verification tests (TC01–TC13)
 npm test
 
 # 3. Run cyber-physical benchmark replay
