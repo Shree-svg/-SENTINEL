@@ -3,8 +3,11 @@
 
 **Document**: `docs/report/DEMO_VIDEO_SCRIPT.md`  
 **Target Duration**: 4 to 6 minutes (optimal academic demonstration length)  
-**Author**: Shreedhar Sharma (B.Tech CSE CPS, VIT Chennai)  
-**Video URL Placeholder**: `https://youtu.be/placeholder-sentinel-demo`  
+**Submitted by**: Shreedhar Sharma (Reg. No.: 24BPS1149)  
+**Programme**: B.Tech — Computer Science and Engineering  
+**Institution**: Vellore Institute of Technology (VIT)  
+**Faculty Supervisor**: Dr Elakiya R  
+**Video URL**: `https://youtu.be/placeholder-sentinel-demo`  
 
 ---
 

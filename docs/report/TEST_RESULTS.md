@@ -2,7 +2,11 @@
 ## SENTINEL: Dual-Tier Cyber-Physical Gas Leak Detection System
 
 **Document**: `docs/report/TEST_RESULTS.md`  
-**Version**: 1.0.0 (Submission-Grade)  
+**Version**: 1.0.0 (Final Submission)  
+**Submitted by**: Shreedhar Sharma (Reg. No.: 24BPS1149)  
+**Programme**: B.Tech — Computer Science and Engineering  
+**Institution**: Vellore Institute of Technology (VIT)  
+**Faculty Supervisor**: Dr Elakiya R  
 **Execution Date**: October 19, 2026  
 **Environment**: Darwin 25.1.0 (macOS Sequoia), Apple M-Series (ARM64), Node.js v20.20.0, npm v10.8.2  
 **Test Suite Status**: 100% PASSED (Zero Failures, Zero Skips)  

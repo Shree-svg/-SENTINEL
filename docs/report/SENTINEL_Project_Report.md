@@ -1,13 +1,14 @@
 # SENTINEL: Dual-Tier Cyber-Physical Gas Leak Detection System
 ## Final Academic Project Report
 
-**Degree Programme**: Bachelor of Technology (B.Tech) in Computer Science & Engineering  
-**Specialization**: Cyber-Physical Systems (CPS)  
-**Institution**: School of Computer Science and Engineering (SCOPE), Vellore Institute of Technology (VIT), Chennai  
-**Author**: Shreedhar Sharma (Reg. No.: `[21BCSxxxx / Student Reg Number Placeholder]`)  
-**Faculty Project Supervisor**: `[Faculty Supervisor Name / Department Placeholder]`  
+**Project Title**: SENTINEL — Dual-Tier Cyber-Physical Gas Leak Detection System  
+**Submitted by**: Shreedhar Sharma  
+**Registration Number**: 24BPS1149  
+**Programme**: B.Tech — Computer Science and Engineering  
+**Institution**: Vellore Institute of Technology (VIT)  
+**Faculty Supervisor**: Dr Elakiya R  
 **Academic Year**: 2025–2026  
-**Document Version**: 1.0.0 (Submission-Grade)  
+**Document Version**: 1.0.0 (Final Submission)  
 **Repository**: [https://github.com/Shree-svg/-SENTINEL](https://github.com/Shree-svg/-SENTINEL)  
 
 ---

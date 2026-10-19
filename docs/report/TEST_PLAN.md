@@ -3,8 +3,11 @@
 
 **Document**: `docs/report/TEST_PLAN.md`  
 **Methodological Framework**: Informed by the test documentation principles of IEEE 829 / ISO/IEC/IEEE 29119  
-**Version**: 1.0.0 (Submission-Grade)  
-**Author**: Shreedhar Sharma (B.Tech CSE CPS, VIT Chennai)  
+**Version**: 1.0.0 (Final Submission)  
+**Submitted by**: Shreedhar Sharma (Reg. No.: 24BPS1149)  
+**Programme**: B.Tech — Computer Science and Engineering  
+**Institution**: Vellore Institute of Technology (VIT)  
+**Faculty Supervisor**: Dr Elakiya R  
 
 ---
 

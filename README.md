@@ -324,12 +324,15 @@ npm run build
 
 ## 👤 Author & Academic Affiliation
 
-* **Lead Architect & Developer**: **Shreedhar Sharma**
-* **Institution**: Vellore Institute of Technology (VIT), Chennai
-* **Specialization**: B.Tech CSE (Cyber-Physical Systems — CPS)
+* **Submitted by**: **Shreedhar Sharma**
+* **Registration Number**: **24BPS1149**
+* **Programme**: **B.Tech — Computer Science and Engineering**
+* **Institution**: **Vellore Institute of Technology (VIT)**
+* **Faculty Supervisor**: **Dr Elakiya R**
 * **Contact Email**: [shreedharsharma192@gmail.com](mailto:shreedharsharma192@gmail.com)
 * **Portfolio**: [portfolio-five-delta-xr8oas2k65.vercel.app](https://portfolio-five-delta-xr8oas2k65.vercel.app/)
 * **GitHub**: [@Shree-svg](https://github.com/Shree-svg)
+
 
 ---
 

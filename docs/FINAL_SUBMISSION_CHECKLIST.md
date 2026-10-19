@@ -70,7 +70,7 @@ To ensure complete transparency and avoid unverified claims, verification activi
 ## 4. Pending User Actions for University Submission
 
 1. **Academic Registration Details**:
-   - In `docs/report/SENTINEL_Project_Report.md`, replace the bracketed placeholders (`[21BCSxxxx / Student Reg Number Placeholder]` and `[Faculty Supervisor Name / Department Placeholder]`) with actual academic registration details.
+   - **COMPLETED**: Updated with Shreedhar Sharma (Reg. No.: 24BPS1149), B.Tech CSE, Vellore Institute of Technology (VIT), Faculty Supervisor Dr Elakiya R across `README.md`, `SENTINEL_Project_Report.md`, and all report modules.
 2. **Demonstration Video Recording**:
    - Follow the scene-by-scene script in `docs/report/DEMO_VIDEO_SCRIPT.md` to record the 4–6 minute video walkthrough.
    - Upload the recording to YouTube (Unlisted) or institutional Google Drive.

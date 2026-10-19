@@ -3,9 +3,12 @@
 
 **Methodological Framework**: Informed by the principles of ISO/IEC/IEEE 29148:2018 (Systems and software engineering — Life cycle processes — Requirements engineering)  
 **Project Identifier**: SENTINEL-CPS  
-**Version**: 1.0.0 (Submission-Grade)  
+**Version**: 1.0.0 (Final Submission)  
 **Date**: October 19, 2026  
-**Author**: Shreedhar Sharma (B.Tech CSE Cyber-Physical Systems, VIT Chennai)  
+**Submitted by**: Shreedhar Sharma (Reg. No.: 24BPS1149)  
+**Programme**: B.Tech — Computer Science and Engineering  
+**Institution**: Vellore Institute of Technology (VIT)  
+**Faculty Supervisor**: Dr Elakiya R  
 **Repository**: [https://github.com/Shree-svg/-SENTINEL](https://github.com/Shree-svg/-SENTINEL)
 
 ---

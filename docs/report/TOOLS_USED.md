@@ -2,8 +2,11 @@
 ## SENTINEL: Dual-Tier Cyber-Physical Gas Leak Detection System
 
 **Document**: `docs/report/TOOLS_USED.md`  
-**Version**: 1.0.0 (Submission-Grade)  
-**Author**: Shreedhar Sharma (B.Tech CSE CPS, VIT Chennai)  
+**Version**: 1.0.0 (Final Submission)  
+**Submitted by**: Shreedhar Sharma (Reg. No.: 24BPS1149)  
+**Programme**: B.Tech — Computer Science and Engineering  
+**Institution**: Vellore Institute of Technology (VIT)  
+**Faculty Supervisor**: Dr Elakiya R  
 
 ---
 

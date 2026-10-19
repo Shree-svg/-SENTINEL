@@ -3,8 +3,11 @@
 
 **Document**: `docs/report/REFERENCES.md`  
 **Format**: IEEE Standard Citation & Bibliographic Reference Format  
-**Version**: 1.0.0 (Submission-Grade)  
-**Author**: Shreedhar Sharma (B.Tech CSE CPS, VIT Chennai)  
+**Version**: 1.0.0 (Final Submission)  
+**Submitted by**: Shreedhar Sharma (Reg. No.: 24BPS1149)  
+**Programme**: B.Tech — Computer Science and Engineering  
+**Institution**: Vellore Institute of Technology (VIT)  
+**Faculty Supervisor**: Dr Elakiya R  
 
 ---
 

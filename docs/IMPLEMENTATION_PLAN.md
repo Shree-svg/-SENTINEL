@@ -4,7 +4,10 @@
 **Document**: `docs/IMPLEMENTATION_PLAN.md`  
 **Version**: 1.0.0 (Submission-Grade)  
 **Date**: October 19, 2026  
-**Author**: Shreedhar Sharma (B.Tech CSE CPS, VIT Chennai)  
+**Submitted by**: Shreedhar Sharma (Reg. No.: 24BPS1149)  
+**Programme**: B.Tech — Computer Science and Engineering  
+**Institution**: Vellore Institute of Technology (VIT)  
+**Faculty Supervisor**: Dr Elakiya R  
 **Status**: APPROVED & ACTIVE (Phase 1 Complete → Phase 2 Execution)
 
 ---
