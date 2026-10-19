@@ -76,8 +76,9 @@ The system is partitioned into two distinct operational planes with strict fail-
 ### 2.1 Backend & Middleware (`server/`)
 | Path | Component | Purpose & Endpoints |
 |---|---|---|
-| `server/index.js` | Ingestion Bridge | Serial port watchdog, baud 9600 stream listener, alert logging, REST server on port 3001. Interacts with `/api/readings/*`, `/api/alerts/*`. |
+| `server/index.js` | Ingestion Bridge | Serial port watchdog, baud 9600 stream listener, alert logging, REST server on port 3001. Bound to `127.0.0.1` with restricted CORS for prototype isolation. Interacts with `/api/readings/*`, `/api/alerts/*`. |
 | `server/demoSimulator.js` | Demo Simulator Engine | Generates synthetic telemetry frames across 6 scenarios (`normal`, `steam`, `cooking`, `gas_leak`, `adc_saturation`, `sensor_fault`). Implements real-device preemption. Exposes `POST /api/demo/start`, `POST /api/demo/stop`, `POST /api/demo/scenario`, `GET /api/demo/status`. |
+| `server/compensationConfig.json` | Compensation Parameters | Gain constants ($K_{RH}=2.8, K_T=1.2$), baselines ($RH_0=50.0, T_0=24.0$), and threshold limits ($300\text{ ADC}$ alarm, $500\text{ ADC}$ danger floor). |
 
 ### 2.2 Reusable Analytical Pipeline (`src/sim/` & `src/hooks/`)
 | Path | Component | Purpose |
@@ -86,24 +87,28 @@ The system is partitioned into two distinct operational planes with strict fail-
 | `src/hooks/usePipeline.ts` | Reactive Pipeline Hook | Connects incoming telemetry (live serial or demo stream) into `createPipeline()`, maintaining stateful analysis and exposing `ack()` local alarm acknowledgment. |
 | `src/sim/SimulationPanel.tsx` | Simulation Controls | Scenario injection buttons, ground truth validation table, and plain threshold vs. SENTINEL comparative analysis. |
 
-### 2.3 User Interface (`src/components/` & `src/views/`)
+### 2.3 User Interface (`src/components/`)
 | Path | Component | Key Features & Responsibilities |
 |---|---|---|
 | `src/components/Shell.tsx` | Application Shell | Header with connection status, navigation tabs, and **Demo Readings** toggle switch with real-hardware lock. |
 | `src/components/LiveStatusPanel.tsx` | Live Monitor Dashboard | Classification banner (`SAFE`, `steam suppressed`, `leak suspected`, `GAS LEAK`, `sensor fault`), Compensated Residual & TTD cards, Escalation Stepper, and Raw vs. Compensated SVG chart. |
 | `src/components/AlertHistoryList.tsx` | Alert History | Chronological alert log with filters, contributing factors side panel trigger, and simulated alert indicators. |
 | `src/components/ContributingFactors.tsx` | Explainability Panel | Slide-in drawer detailing sensor weights, environmental delta, and classification reasoning. |
-| `src/views/CaregiverView.tsx` | Remote Caregiver Portal | Asymmetric read-only view with national emergency (112) dialer and real-time alerts. |
-| `src/views/AdminCalibrationView.tsx` | Admin Calibration View | Historical dataset labeling and model parameter adjustment workbench. |
+| `src/components/CaregiverView.tsx` | Remote Caregiver Portal | Asymmetric read-only view with national emergency (112) dialer and real-time alerts. |
+| `src/components/AdminCalibrationView.tsx` | Admin Calibration View | Historical dataset labeling and model parameter adjustment workbench. |
+| `src/components/NotificationSettingsView.tsx` | Notification Settings | Recipient numbers, escalation delays, and emergency caregiver contact configuration. |
+| `src/components/DisclaimerBanner.tsx` | Safety Banner | Persistent footer banner emphasizing certified safety boundaries. |
 
-### 2.4 Offline Evaluation & Benchmarks (`scripts/` & `data/`)
+### 2.4 Testing, Evaluation & Benchmarks (`tests/`, `scripts/` & `data/`)
 | Path | Purpose |
 |---|---|
+| `tests/pipeline.test.js` | Automated verification test suite (TC06–TC13) validating warm-up stabilization, baseline tracking, steam suppression, cooking transient suppression, leak escalation, debounce hysteresis, predictive TTD, and sensor fault handling. |
 | `scripts/evaluate.js` | Headless cyber-physical benchmark runner evaluating plain threshold vs. SENTINEL pipeline across empirical datasets. |
 | `data/cooking.csv` | Empirical kitchen dataset recorded during high-heat stir fry cooking with ambient vapour and temperature rise. |
 | `data/steam.csv` | Kitchen dataset recorded under pure boiling water steam bursts ($\Delta RH > +40\%$). |
 | `data/gas.csv` | Genuine combustible gas leak session with steep rising concentration towards 500 ADC danger floor. |
 | `data/normal.csv` | Baseline normal room air under steady-state environmental conditions. |
+| `.clangd` | Clang tooling configuration mapping `.ino` Arduino sketch files to C++ translation units. |
 
 ---
 

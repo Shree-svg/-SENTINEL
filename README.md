@@ -2,7 +2,7 @@
 
 ### *Dynamic Cross-Sensitivity Compensation & Zero-Trust Edge Safety in Residential Gas Monitoring*
 
-[![CI](https://github.com/Shree-svg/SENTINEL/actions/workflows/ci.yml/badge.svg)](https://github.com/Shree-svg/SENTINEL/actions)
+[![CI](https://github.com/Shree-svg/-SENTINEL/actions/workflows/ci.yml/badge.svg)](https://github.com/Shree-svg/-SENTINEL/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%208-61dafb?style=flat-square&logo=react)](https://react.dev)
@@ -26,8 +26,8 @@ Traditional residential gas detectors suffer from a dangerous failure mode known
 4. **Dual-Tier Architecture with Zero-Trust Edge Safety Floor**:
    * **Firmware Plane (Arduino Nano ATmega328P)**: Autonomous 1.0s non-blocking loop controlling physical piezo buzzer (`D8`) and LED (`D9`) with a 30-second boot-time stabilization hold. Operates unconditionally with **zero reliance** on host PC connectivity, Wi-Fi status, or cloud uptime.
    * **Cyber Analytical Plane (Node.js + React 19)**: Multi-variable feature extraction, rolling trend sparklines, explainability factors, and automated caregiver alerts.
-5. **Interactive Demo Simulation & Benchmark Evaluation Harness**:
-   Built-in ephemeral demo mode with realistic synthetic scenarios (`steam`, `cooking`, `gas_leak`, `normal`, `adc_saturation`, `sensor_fault`) and an offline dataset replay evaluation suite (`npm run evaluate`).
+5. **Interactive Demo Simulation & Automated Verification Suite**:
+   Built-in ephemeral demo mode with realistic synthetic scenarios (`steam`, `cooking`, `gas_leak`, `normal`, `adc_saturation`, `sensor_fault`), an automated 8-test unit verification suite (`npm test`), and an offline dataset replay evaluation benchmark (`npm run evaluate`).
 
 ---
 
@@ -188,6 +188,7 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 ```
 .
 ├── .github/                       # GitHub issue templates & automated CI workflows
+├── .clangd                        # Clang configuration mapping .ino files to C++ translation units
 ├── data/                          # Empirical benchmark CSV datasets
 │   ├── cooking.csv                # High-heat domestic cooking with vapor/heat
 │   ├── gas.csv                    # Controlled butane release ramping to danger floor
@@ -213,14 +214,14 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 │   └── signalAnalytics.js         # Steam compensation, slope & sensor health diagnostics
 ├── src/                           # Frontend React 19 Dashboard
 │   ├── api/                       # Typed REST API client
-│   ├── components/                # UI components (LiveStatusPanel, AlertHistoryList, etc.)
+│   ├── components/                # UI components (LiveStatusPanel, AlertHistoryList, CaregiverView, etc.)
 │   ├── hooks/                     # Custom hooks (usePipeline, usePolling, useReadingHistory)
 │   ├── sim/                       # Analytical pipeline & simulation engine
 │   │   ├── pipeline.ts            # Reusable mathematical compensation & escalation FSM
 │   │   └── SimulationPanel.tsx    # Scenario injection & ground-truth comparison table
 │   └── types/                     # TypeScript data interfaces
 ├── tests/                         # Automated pipeline test suite (TC06–TC13)
-│   └── pipeline.test.js           # Verification test suite for regression & state machine
+│   └── pipeline.test.js           # Unit tests verifying warm-up, steam suppression, slope & FSM
 ├── LICENSE                        # MIT License
 └── package.json                   # Project metadata and dependencies
 ```
@@ -236,13 +237,17 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 
 ### 2. Install Dependencies
 ```bash
-git clone https://github.com/Shree-svg/SENTINEL.git
-cd SENTINEL
+git clone https://github.com/Shree-svg/-SENTINEL.git
+cd -SENTINEL
 npm install
 ```
 
-### 3. Run Benchmark Evaluation Suite
+### 3. Run Automated Tests & Benchmark Evaluation
 ```bash
+# Run unit test suite (TC06–TC13)
+npm test
+
+# Run empirical dataset replay benchmark evaluation
 npm run evaluate
 ```
 
@@ -275,14 +280,17 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 All commits and pull requests are verified using GitHub Actions:
 
 ```bash
-# Typecheck TypeScript & compile production Vite bundle
-npm run build
-
-# Run fast static analysis linter
+# 1. Run fast static analysis linter
 npm run lint
 
-# Run cyber-physical benchmark replay
+# 2. Run automated pipeline verification tests (TC06–TC13)
+npm test
+
+# 3. Run cyber-physical benchmark replay
 npm run evaluate
+
+# 4. Typecheck TypeScript & compile production Vite bundle
+npm run build
 ```
 
 ---

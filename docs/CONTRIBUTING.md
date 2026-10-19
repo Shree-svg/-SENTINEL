@@ -26,8 +26,8 @@ All contributors are expected to adhere to our [Code of Conduct](CODE_OF_CONDUCT
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/Shree-svg/SENTINEL.git
-cd SENTINEL
+git clone https://github.com/Shree-svg/-SENTINEL.git
+cd -SENTINEL
 npm install
 ```
 
@@ -41,7 +41,7 @@ The React 19 dashboard will start at `http://localhost:5173/`.
 ```bash
 npm run server
 ```
-The Express + SerialPort service runs on port `3001`. It will auto-detect connected USB serial ports (`/dev/tty.usbserial-*`, `COM*`) at **9600 baud** and begin streaming telemetry to the web client.
+The Express + SerialPort service runs on port `3001` (bound to `127.0.0.1`). It will auto-detect connected USB serial ports (`/dev/tty.usbserial-*`, `COM*`) at **9600 baud** and begin streaming telemetry to the web client.
 
 ---
 
@@ -65,14 +65,20 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ## Quality & Verification Standards
 
-Before opening a pull request, ensure all verification checks pass:
+Before opening a pull request, ensure all verification checks pass locally:
 
 ```bash
-# 1. Typecheck and verify production Vite build
-npm run build
-
-# 2. Run fast linter
+# 1. Run fast static analysis linter
 npm run lint
+
+# 2. Run automated pipeline verification tests (TC06–TC13)
+npm test
+
+# 3. Run empirical dataset replay benchmark evaluation
+npm run evaluate
+
+# 4. Typecheck TypeScript and compile production Vite bundle
+npm run build
 ```
 
 ### Critical Safety Invariant
