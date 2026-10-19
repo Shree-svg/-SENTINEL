@@ -67,14 +67,18 @@ npm run evaluate
 ### Benchmark Summary: Plain Static Threshold vs. SENTINEL Pipeline
 
 ```
-========================================================================================================================
-Scenario        Ground Truth  | [PLAIN] Alarm   FA?   Miss?   Lead(s)   | [COMPENSATED] Alarm   FA?   Miss?   Lead(s)
-------------------------------------------------------------------------------------------------------------------------
-cooking         NON-HAZARD    | YES (8s)        🔴 YESNO      N/A       | NO                    🟢 NO 🟢 NO   N/A
-gas             GAS LEAK      | YES (17s)       NO    NO      5s        | YES (21s)             🟢 NO 🟢 NO   ⚡ 9s
-normal          NON-HAZARD    | NO              NO    NO      N/A       | NO                    🟢 NO 🟢 NO   N/A
-steam           NON-HAZARD    | YES (11s)       🔴 YESNO      N/A       | NO                    🟢 NO 🟢 NO   N/A
-========================================================================================================================
+--------------------------------------------------------------------------------------------------------------------------------------
+Scenario      Ground Truth  | [PLAIN] (Trig @, Dur)  FA?     Miss?   Lead(s)*  | [COMPENSATED] (Trig @, Dur)  FA?     Miss?   Lead(s)*
+--------------------------------------------------------------------------------------------------------------------------------------
+cooking       NON-HAZARD    | YES (@7s, dur:8s)      🔴 YES  NO      N/A       | NO                           🟢 NO   🟢 NO   N/A
+gas           GAS LEAK      | YES (@8s, dur:17s)     NO      NO      5s        | YES (@4s, dur:21s)           🟢 NO   🟢 NO   ⚡ 9s
+normal        NON-HAZARD    | NO                     NO      NO      N/A       | NO                           🟢 NO   🟢 NO   N/A
+steam         NON-HAZARD    | YES (@7s, dur:11s)     🔴 YES  NO      N/A       | NO                           🟢 NO   🟢 NO   N/A
+--------------------------------------------------------------------------------------------------------------------------------------
+* Lead Time Reference Point: Seconds of warning advance before gas breaches critical 500 ADC floor (reached @13s in gas.csv).
+  - Plain Threshold triggers when rawGas > 300 ADC (@8s) -> Lead Time = 13s - 8s = 5s (alarm active for 17s total).
+  - Compensated / Predictive triggers via positive slope (@4s) -> Lead Time = 13s - 4s = 9s (alarm active for 21s total).
+  - Advance Warning Benefit: 9s - 5s = +4.0s earlier alert to dwelling occupants.
 ```
 
 | Evaluation Metric | Plain Static Threshold (300 ADC) | SENTINEL Compensated Pipeline | Architectural Benefit |

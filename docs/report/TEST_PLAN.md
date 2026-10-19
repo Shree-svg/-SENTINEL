@@ -2,7 +2,7 @@
 ## SENTINEL: Dual-Tier Cyber-Physical Gas Leak Detection System
 
 **Document**: `docs/report/TEST_PLAN.md`  
-**Standard**: Conforming to IEEE 829 / ISO/IEC/IEEE 29119 (Software Testing Standards)  
+**Methodological Framework**: Informed by the test documentation principles of IEEE 829 / ISO/IEC/IEEE 29119  
 **Version**: 1.0.0 (Submission-Grade)  
 **Author**: Shreedhar Sharma (B.Tech CSE CPS, VIT Chennai)  
 

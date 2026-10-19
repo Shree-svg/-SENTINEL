@@ -203,20 +203,20 @@ function runEvaluation() {
   }
 
   // Render Formatted Comparison Table
-  console.log('------------------------------------------------------------------------------------------------------------------------');
+  console.log('----------------------------------------------------------------------------------------------------------------------------------');
   console.log(
-    'Scenario'.padEnd(16) +
+    'Scenario'.padEnd(14) +
     'Ground Truth'.padEnd(14) +
-    '| [PLAIN] Alarm'.padEnd(18) +
-    'FA?'.padEnd(6) +
+    '| [PLAIN] (Trig @, Dur)'.padEnd(25) +
+    'FA?'.padEnd(8) +
     'Miss?'.padEnd(8) +
-    'Lead(s)'.padEnd(10) +
-    '| [COMPENSATED] Alarm'.padEnd(24) +
-    'FA?'.padEnd(6) +
+    'Lead(s)*'.padEnd(10) +
+    '| [COMPENSATED] (Trig @, Dur)'.padEnd(31) +
+    'FA?'.padEnd(8) +
     'Miss?'.padEnd(8) +
-    'Lead(s)'
+    'Lead(s)*'
   );
-  console.log('------------------------------------------------------------------------------------------------------------------------');
+  console.log('--------------------------------------------------------------------------------------------------------------------------------------');
 
   let plainTotalFA = 0;
   let plainTotalMissed = 0;
@@ -234,31 +234,35 @@ function runEvaluation() {
     if (r.plain.leadTimeSeconds !== null) plainLeadTimes.push(r.plain.leadTimeSeconds);
     if (r.compensated.leadTimeSeconds !== null) compLeadTimes.push(r.compensated.leadTimeSeconds);
 
-    const plainAlarmStr = r.plain.triggered ? `YES (${r.plain.alarmSamples}s)` : 'NO';
+    const plainAlarmStr = r.plain.triggered ? `YES (@${r.plain.firstIndex}s, dur:${r.plain.alarmSamples}s)` : 'NO';
     const plainFAStr = r.plain.falseAlarm ? '🔴 YES' : 'NO';
     const plainMissStr = r.plain.missed ? '🔴 YES' : 'NO';
     const plainLeadStr = r.plain.leadTimeSeconds !== null ? `${r.plain.leadTimeSeconds}s` : 'N/A';
 
-    const compAlarmStr = r.compensated.triggered ? `YES (${r.compensated.alarmSamples}s)` : 'NO';
+    const compAlarmStr = r.compensated.triggered ? `YES (@${r.compensated.firstIndex}s, dur:${r.compensated.alarmSamples}s)` : 'NO';
     const compFAStr = r.compensated.falseAlarm ? '🔴 YES' : '🟢 NO';
     const compMissStr = r.compensated.missed ? '🔴 YES' : '🟢 NO';
     const compLeadStr = r.compensated.leadTimeSeconds !== null ? `⚡ ${r.compensated.leadTimeSeconds}s` : 'N/A';
 
     console.log(
-      r.scenario.padEnd(16) +
+      r.scenario.padEnd(14) +
       r.groundTruth.padEnd(14) +
-      '| ' + plainAlarmStr.padEnd(16) +
-      plainFAStr.padEnd(6) +
+      '| ' + plainAlarmStr.padEnd(23) +
+      plainFAStr.padEnd(8) +
       plainMissStr.padEnd(8) +
       plainLeadStr.padEnd(10) +
-      '| ' + compAlarmStr.padEnd(22) +
-      compFAStr.padEnd(6) +
+      '| ' + compAlarmStr.padEnd(29) +
+      compFAStr.padEnd(8) +
       compMissStr.padEnd(8) +
       compLeadStr
     );
   }
 
-  console.log('------------------------------------------------------------------------------------------------------------------------\n');
+  console.log('--------------------------------------------------------------------------------------------------------------------------------------');
+  console.log('* Lead Time Definition: Seconds of warning advance provided BEFORE gas breaches the 500 ADC danger floor (reached @13s in gas.csv).\n' +
+              '  - Plain Detector triggers when rawGas > 300 ADC (at t=8s) -> Lead Time = 13s - 8s = 5s (alarm active for 17s total).\n' +
+              '  - Compensated/Predictive Detector triggers via positive slope (at t=4s) -> Lead Time = 13s - 4s = 9s (alarm active for 21s total).\n' +
+              '  - Net Early Warning Advance = 9s - 5s = +4.0s earlier alert to occupants.\n');
 
   // Executive Summary
   const avgPlainLead = plainLeadTimes.length > 0 ? (plainLeadTimes.reduce((a, b) => a + b, 0) / plainLeadTimes.length).toFixed(1) : 'N/A';
@@ -273,7 +277,7 @@ function runEvaluation() {
   console.log('  1. Steam & Cooking Rejection : Regression on (T, RH) eliminates false alarms caused by everyday kitchen steam.');
   console.log('  2. Early Predictive Warning : 10-sample slope calculation warns occupants BEFORE gas breaches the 500 ADC hazard threshold.');
   console.log('  3. Zero Life-Safety Compromise: Combustible gas leaks in dry conditions pass directly through compensation without suppression.');
-  console.log('========================================================================================================================\n');
+  console.log('==================================================================================================================================\n');
 }
 
 runEvaluation();

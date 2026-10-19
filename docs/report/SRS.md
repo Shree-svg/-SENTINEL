@@ -1,7 +1,7 @@
 # Software Requirements Specification (SRS)
 ## SENTINEL: Dual-Tier Cyber-Physical Gas Leak Detection System
 
-**Standard**: Conforming to ISO/IEC/IEEE 29148:2018 (Systems and software engineering — Life cycle processes — Requirements engineering)  
+**Methodological Framework**: Informed by the principles of ISO/IEC/IEEE 29148:2018 (Systems and software engineering — Life cycle processes — Requirements engineering)  
 **Project Identifier**: SENTINEL-CPS  
 **Version**: 1.0.0 (Submission-Grade)  
 **Date**: October 19, 2026  

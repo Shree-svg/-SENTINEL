@@ -71,14 +71,18 @@ Execution of `npm run evaluate` replaying 120+ empirical hardware samples from `
 
 Active Analytics Config: baselineRH=50%, baselineT=24°C, humCoeff=2.8, dangerThreshold=500
 
-------------------------------------------------------------------------------------------------------------------------
-Scenario        Ground Truth  | [PLAIN] Alarm   FA?   Miss?   Lead(s)   | [COMPENSATED] Alarm   FA?   Miss?   Lead(s)
-------------------------------------------------------------------------------------------------------------------------
-cooking         NON-HAZARD    | YES (8s)        🔴 YESNO      N/A       | NO                    🟢 NO 🟢 NO   N/A
-gas             GAS LEAK      | YES (17s)       NO    NO      5s        | YES (21s)             🟢 NO 🟢 NO   ⚡ 9s
-normal          NON-HAZARD    | NO              NO    NO      N/A       | NO                    🟢 NO 🟢 NO   N/A
-steam           NON-HAZARD    | YES (11s)       🔴 YESNO      N/A       | NO                    🟢 NO 🟢 NO   N/A
-------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------
+Scenario      Ground Truth  | [PLAIN] (Trig @, Dur)  FA?     Miss?   Lead(s)*  | [COMPENSATED] (Trig @, Dur)  FA?     Miss?   Lead(s)*
+--------------------------------------------------------------------------------------------------------------------------------------
+cooking       NON-HAZARD    | YES (@7s, dur:8s)      🔴 YES  NO      N/A       | NO                           🟢 NO   🟢 NO   N/A
+gas           GAS LEAK      | YES (@8s, dur:17s)     NO      NO      5s        | YES (@4s, dur:21s)           🟢 NO   🟢 NO   ⚡ 9s
+normal        NON-HAZARD    | NO                     NO      NO      N/A       | NO                           🟢 NO   🟢 NO   N/A
+steam         NON-HAZARD    | YES (@7s, dur:11s)     🔴 YES  NO      N/A       | NO                           🟢 NO   🟢 NO   N/A
+--------------------------------------------------------------------------------------------------------------------------------------
+* Lead Time Definition: Seconds of warning advance provided BEFORE gas breaches the 500 ADC danger floor (reached @13s in gas.csv).
+  - Plain Detector triggers when rawGas > 300 ADC (at t=8s) -> Lead Time = 13s - 8s = 5s (alarm active for 17s total).
+  - Compensated/Predictive Detector triggers via positive slope (at t=4s) -> Lead Time = 13s - 4s = 9s (alarm active for 21s total).
+  - Net Early Warning Advance = 9s - 5s = +4.0s earlier alert to occupants.
 
 📊 EVALUATION SUMMARY & SAFETY GAINS:
   • False Alarms (Non-Hazards)  : Plain = 2 | Compensated/Predictive = 0  (-100% False Positive Reduction)
