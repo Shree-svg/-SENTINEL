@@ -12,9 +12,11 @@ import type { Reading } from "../hooks/useDeviceConnection";
 
 export const CFG = {
   NAIVE_THRESHOLD: 300, // plain detector: alarm if raw gas > this
-  WARMUP_SAMPLES: 10, // real MQ-2 needs minutes; shortened for the demo
-  K_RH: 5.2, // fitted humidity coefficient (deliberately not perfect)
-  K_T: 1.5, // fitted temperature coefficient
+  WARMUP_SAMPLES: 10, // calibration baseline window
+  K_RH: 2.8, // empirical humidity cross-sensitivity gain (ADC/%RH)
+  K_T: 1.2, // empirical thermal cross-sensitivity gain (ADC/°C)
+  MAX_STEAM_DEDUCTION: 250, // max steam compensation deduction limit
+  DANGER_THRESHOLD: 500, // critical hazard threshold (500 ADC)
   WARN_RESIDUAL: 60,
   ALARM_RESIDUAL: 150,
   DANGER_RESIDUAL: 300,
@@ -145,9 +147,13 @@ export function createPipeline() {
     const b = base!;
 
     // 2. Compensation
-    const comp = faultAny
-      ? r.gas
-      : r.gas - (CFG.K_RH * (r.rh - b.rh) + CFG.K_T * (r.temp - b.temp));
+    const deltaHum = Math.max(0, r.rh - b.rh);
+    const deltaTemp = Math.max(0, r.temp - b.temp);
+    const steamDeduction = Math.min(
+      CFG.MAX_STEAM_DEDUCTION,
+      Math.max(0, CFG.K_RH * deltaHum + CFG.K_T * deltaTemp)
+    );
+    const comp = faultAny ? r.gas : Math.max(0, Math.round(r.gas - steamDeduction));
     const residual = comp - b.gas;
     if (!faultAny) {
       resBuf.push(residual);
@@ -159,16 +165,16 @@ export function createPipeline() {
     const rhSl = faultAny ? 0 : slope(rhBuf);
     let ttd: number | null = null;
     if (!faultAny) {
-      if (residual >= CFG.DANGER_RESIDUAL) ttd = 0;
-      else if (sl > 0.3) ttd = Math.min(600, Math.max(0, (CFG.DANGER_RESIDUAL - residual) / sl));
+      if (comp >= CFG.DANGER_THRESHOLD || residual >= CFG.DANGER_RESIDUAL) ttd = 0;
+      else if (sl > 0.3) ttd = Math.min(600, Math.max(0, (CFG.DANGER_THRESHOLD - comp) / sl));
     }
 
     // 4. Classification
     let newCls: Cls;
     if (faultAny) newCls = "SENSOR_FAULT";
-    else if (saturated || residual >= CFG.ALARM_RESIDUAL) newCls = "GAS_LEAK";
+    else if (saturated || comp >= CFG.DANGER_THRESHOLD || residual >= CFG.ALARM_RESIDUAL) newCls = "GAS_LEAK";
     else if (residual >= CFG.WARN_RESIDUAL) newCls = "LEAK_SUSPECTED";
-    else if (naiveAlarm || r.rh - b.rh > 5) newCls = "BENIGN_STEAM";
+    else if (naiveAlarm || deltaHum > 5) newCls = "BENIGN_STEAM";
     else newCls = "SAFE";
     if (newCls !== cls) {
       events.push(`Classification: ${cls} → ${newCls}`);

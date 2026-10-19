@@ -7,7 +7,15 @@
   "humidityCoefficient": 2.8,
   "temperatureCoefficient": 1.2,
   "intercept": 0.0,
+  "naiveThreshold": 300,
   "maxSteamDeduction": 250,
   "warmupDurationSeconds": 30,
-  "flatlineSampleCount": 15
+  "flatlineSampleCount": 15,
+  "warnResidual": 60,
+  "alarmResidual": 150,
+  "dangerResidual": 300,
+  "windowSize": 10,
+  "alarmConfirm": 3,
+  "escalateAfter": 15,
+  "emergencyAfter": 30
 }

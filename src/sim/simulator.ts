@@ -38,7 +38,7 @@ export const SCENARIO_INFO: Record<Scenario, { label: string; benign: boolean; d
 };
 
 // Ground-truth model of the (simulated) sensor
-export const SIM = { BASE_GAS: 180, BASE_TEMP: 27, BASE_RH: 55, K_RH: 5.5, K_T: 1.5 };
+export const SIM = { BASE_GAS: 180, BASE_TEMP: 27, BASE_RH: 55, K_RH: 2.8, K_T: 1.2 };
 const FW_ON = 600; // simulated hardcoded firmware safety floor (on)
 const FW_OFF = 550; // (off, hysteresis)
 

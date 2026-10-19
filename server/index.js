@@ -195,7 +195,8 @@ function processReading(rawGas, temp, hum, deviceTime, seq = 0, isFromDemo = fal
   }
 
   // Rule 2: Genuine combustible gas leak
-  if (rawGas >= 450 || (rate_of_change_gas >= 15.0 && hum < 72.0) || (compensatedGas >= 300 && hum < 72.0)) {
+  const dangerFloor = config.dangerThreshold || 500;
+  if (rawGas >= dangerFloor || (rate_of_change_gas >= 15.0 && hum < 72.0) || (compensatedGas >= 300 && hum < 72.0)) {
     label = "Genuine Leak";
     confidence = 0.96;
     severity = "high";

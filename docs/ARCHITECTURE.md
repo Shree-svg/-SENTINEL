@@ -11,7 +11,7 @@ The system is partitioned into two distinct operational planes with strict fail-
    - Operates unconditionally with zero host, network, or cloud dependencies.
    - Dual serial output: USB CDC (9600 baud) and HC-05 Bluetooth UART.
 2. **Cyber Analytical Plane (Node.js Ingestion Bridge & React Analytical Pipeline)**:
-   - Dynamic cross-sensitivity compensation ($K_{RH} = 5.2, K_T = 1.5$) with baseline calibration.
+   - Dynamic cross-sensitivity compensation ($K_{RH} = 2.8, K_T = 1.2$) with baseline calibration.
    - 10-sample least-squares regression slope estimation and Time-to-Danger (TTD) projection.
    - 5-stage escalation state machine (`NORMAL → WARNING → ALARM → ESCALATED → EMERGENCY`).
    - Ephemeral synthetic telemetry generator (`demoSimulator.js`) with zero-interference safety guarantees.
@@ -100,9 +100,10 @@ The system is partitioned into two distinct operational planes with strict fail-
 | Path | Purpose |
 |---|---|
 | `scripts/evaluate.js` | Headless cyber-physical benchmark runner evaluating plain threshold vs. SENTINEL pipeline across empirical datasets. |
-| `data/cooking_steam.json` | Empirical kitchen dataset with heavy steam bursts ($\Delta RH > +15\%$). |
-| `data/rapid_leak.json` | Combustible gas leak event with steep slope ($m > 25\text{ ADC/s}$). |
-| `data/slow_drift.json` | Gradual ambient temperature and humidity shifts. |
+| `data/cooking.csv` | Empirical kitchen dataset recorded during high-heat stir fry cooking with ambient vapour and temperature rise. |
+| `data/steam.csv` | Kitchen dataset recorded under pure boiling water steam bursts ($\Delta RH > +40\%$). |
+| `data/gas.csv` | Genuine combustible gas leak session with steep rising concentration towards 500 ADC danger floor. |
+| `data/normal.csv` | Baseline normal room air under steady-state environmental conditions. |
 
 ---
 
@@ -111,13 +112,14 @@ The system is partitioned into two distinct operational planes with strict fail-
 ### 3.1 Dynamic Environmental Cross-Sensitivity Compensation
 The raw conductance of metal-oxide semiconductor gas sensors ($SnO_2$) varies significantly with ambient humidity ($RH$) and temperature ($T$). SENTINEL computes a compensated gas residual $R_{comp}(t)$:
 
-$$R_{comp}(t) = R_{raw}(t) - \Big( K_{RH} \cdot \big(RH(t) - RH_0\big) + K_T \cdot \big(T(t) - T_0\big) \Big)$$
+$$R_{comp}(t) = R_{raw}(t) - \min\Big(250, \max\big(0, K_{RH} \cdot (RH(t) - RH_0) + K_T \cdot (T(t) - T_0)\big)\Big)$$
 
 Where:
 - $R_{raw}(t)$ = Instantaneous MQ-2 ADC reading ($0 - 1023$).
-- $RH_0, T_0$ = Learned baseline environmental conditions calibrated during steady-state normal conditions.
-- $K_{RH} = 5.2\text{ ADC/\%RH}$ = Empirical humidity cross-sensitivity gain.
-- $K_T = 1.5\text{ ADC/°C}$ = Empirical thermal cross-sensitivity gain.
+- $RH_0 = 50.0\%, T_0 = 24.0^\circ\text{C}$ = Standard baseline environmental conditions (or auto-calibrated during warm-up).
+- $K_{RH} = 2.8\text{ ADC/\%RH}$ = Empirical humidity cross-sensitivity gain.
+- $K_T = 1.2\text{ ADC/°C}$ = Empirical thermal cross-sensitivity gain.
+- $\text{Max Steam Deduction} = 250\text{ ADC}$ = Safety bounding cap preventing gas leak masking under saturated humidity.
 
 ### 3.2 10-Sample Least-Squares Slope Estimation
 To detect early gas accumulation before reaching dangerous concentrations, the pipeline calculates the linear rate of change over a rolling window $N = 10$:
@@ -125,26 +127,26 @@ To detect early gas accumulation before reaching dangerous concentrations, the p
 $$m = \frac{N \sum (t_i \cdot R_i) - \big(\sum t_i\big)\big(\sum R_i\big)}{N \sum t_i^2 - \big(\sum t_i\big)^2}$$
 
 ### 3.3 Predictive Time-to-Danger (TTD)
-When an ascending gas trajectory is detected ($m > 0$), the time remaining before reaching the critical hazard threshold $\theta_{danger} = 450\text{ ADC}$ is estimated:
+When an ascending gas trajectory is detected ($m > 0$), the time remaining before reaching the critical hazard threshold $\theta_{danger} = 500\text{ ADC}$ is estimated:
 
-$$t_{danger} = \begin{cases} \dfrac{\theta_{danger} - R_{comp}(t)}{m}, & \text{if } m > 1.0\text{ ADC/s} \text{ and } R_{comp}(t) < \theta_{danger} \\ 0\text{ s}, & \text{if } R_{comp}(t) \ge \theta_{danger} \\ \infty, & \text{otherwise} \end{cases}$$
+$$t_{danger} = \begin{cases} \dfrac{\theta_{danger} - R_{comp}(t)}{m}, & \text{if } m > 0.4\text{ ADC/s} \text{ and } R_{comp}(t) < \theta_{danger} \\ 0\text{ s}, & \text{if } R_{comp}(t) \ge \theta_{danger} \\ \infty, & \text{otherwise} \end{cases}$$
 
 ### 3.4 5-Stage Escalation State Machine
 ```
-   [ NORMAL ] ──(Gas > 280 for 10s)──► [ WARNING ] ──(Gas > 300)──► [ ALARM ]
-       ▲                                                                 │
-       │                              ┌──────────────────────────────────┘
-       │                              │ (15s elapsed without ack)
-       │                              ▼
-  (Reset if gas < 250)         [ ESCALATED ] ──(30s elapsed)──► [ EMERGENCY ]
-                               (Caregiver SMS)                   (112 Call Prompt)
+   [ NORMAL ] ──(Residual ≥ 60 for debounce)──► [ WARNING ] ──(Residual ≥ 150 or Comp ≥ 300)──► [ ALARM ]
+       ▲                                                                                              │
+       │                                            ┌─────────────────────────────────────────────────┘
+       │                                            │ (15s elapsed without ack)
+       │                                            ▼
+  (Reset if residual < 30)                     [ ESCALATED ] ──(30s elapsed)──► [ EMERGENCY ]
+                                               (Caregiver SMS)                   (112 Call Prompt)
 ```
 
-1. **NORMAL**: Safe baseline condition ($R_{comp} < 280\text{ ADC}$).
-2. **WARNING**: Gas elevated above warning threshold for 10 consecutive seconds.
-3. **ALARM**: Immediate hazard confirmed ($R_{comp} \ge 300\text{ ADC}$). Physical buzzer activates on hardware edge.
+1. **NORMAL**: Safe ambient condition ($R_{comp} < 300\text{ ADC}$, residual $< 60\text{ ADC}$ above baseline).
+2. **WARNING**: Possible gas buildup or sensor drift (residual $\ge 60\text{ ADC}$ for 10-sample window).
+3. **ALARM**: Immediate hazard confirmed ($R_{comp} \ge 300\text{ ADC}$ or residual $\ge 150\text{ ADC}$). Physical buzzer activates on hardware edge.
 4. **ESCALATED**: Alarm unacknowledged for $15\text{ seconds}$. Automated Caregiver SMS dispatched.
-5. **EMERGENCY**: Hazard unresolved after $30\text{ seconds}$. Emergency response protocol triggered (National Emergency 112).
+5. **EMERGENCY**: Hazard unresolved after $30\text{ seconds}$ or critical safety floor breached ($R_{raw} \ge 500\text{ ADC}$). National Emergency 112 dispatch prompt displayed.
 
 ---
 

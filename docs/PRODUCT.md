@@ -21,8 +21,8 @@ In real kitchens:
 
 ## 2. Core Value Propositions
 
-### 2.1 Environmental Steam Rejection (Zero False Alarms)
-Using real-time humidity and thermal cross-sensitivity compensation ($K_{RH} = 5.2, K_T = 1.5$), SENTINEL differentiates rapid moisture surges ($\Delta RH / \Delta t$) from genuine hydrocarbon gas accumulation. Everyday cooking steam is classified as `steam suppressed` without sounding sirens.
+### 2.1 Environmental Steam Rejection (Zero False Alarms in Test Suite)
+Using real-time humidity and thermal cross-sensitivity compensation ($K_{RH} = 2.8, K_T = 1.2$), SENTINEL differentiates rapid moisture surges ($\Delta RH / \Delta t$) from genuine hydrocarbon gas accumulation. Everyday cooking steam is classified as `steam suppressed` without sounding sirens.
 
 ### 2.2 Predictive Early Warning (+4.0s Lead Time)
 Using a 10-sample rolling least-squares slope estimator, the system tracks gas ascent trajectory and computes **Time-to-Danger (TTD)**. Occupants receive actionable predictive warnings seconds *before* gas concentrations breach critical combustion thresholds.
@@ -57,9 +57,9 @@ For live demonstrations, academic viva examinations, and user training without f
 - **Simulation Action Sandboxing**: Emergency calls and SMS dispatches are simulated on-screen as toast notifications, preventing accidental real-world emergency dispatching during demonstrations.
 
 ### 3.2 Empirical Replay Benchmark Suite
-The project includes a replay benchmark harness (`npm run evaluate`) that runs historical scenario datasets (`data/`) through both a standard naive threshold detector and the SENTINEL compensated pipeline:
-- **False Alarm Rate**: Reduced from 2 false alarms down to **0** (-100% false positive reduction).
-- **Missed Detection Rate**: **0%** missed leaks across all datasets.
+The project includes a replay benchmark harness (`npm run evaluate`) that runs historical scenario datasets (`data/*.csv`) through both a standard naive threshold detector and the SENTINEL compensated pipeline:
+- **False Alarm Rate**: Eliminated false alarms across the 4 recorded test sessions (2 naive triggers reduced to **0** false alarms in the compensated pipeline).
+- **Missed Detection Rate**: **0%** missed leaks across all recorded sessions.
 - **Early Warning Lead Time**: Delivers up to **+4.0 seconds** of advance warning over static thresholds.
 
 ---
