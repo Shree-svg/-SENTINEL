@@ -13,7 +13,22 @@
 DHT dht(DHTPIN, DHTTYPE);
 SoftwareSerial BT(BT_RX, BT_TX); 
 
-int threshold = 300; // Gas threshold trigger level
+// Thresholds & Stabilization
+const int threshold = 300; // Gas threshold trigger level (ADC)
+const unsigned long WARMUP_TIME_MS = 30000; // 30-second initial sensor stabilization hold
+
+/**
+ * ARCHITECTURAL DESIGN & KNOWN LIMITATION:
+ * The Arduino Nano operates as a zero-trust edge safety floor. If gasValue > threshold (300 ADC)
+ * outside the warm-up window, the local buzzer (D8) and LED (D9) trigger immediately and autonomously,
+ * requiring zero host connectivity or network uptime.
+ *
+ * KNOWN LIMITATION: Because the 8-bit ATmega328P relies on a static threshold without multi-sensor
+ * regression, dense kitchen steam exceeding 300 ADC can sound the local physical buzzer.
+ * The cyber analytical pipeline running on the host bridge implements the dynamic humidity/temperature
+ * cross-sensitivity compensation (K_RH = 2.8, K_T = 1.2) to classify and suppress such nuisance alarms
+ * on the dashboard and remote caregiver alerting network.
+ */
 
 void sendPacket(int gas, float temp, float hum, int alarm) {
   static uint16_t seq = 0;
@@ -49,8 +64,8 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(BUZZER_PIN, LOW);
   digitalWrite(LED_PIN, LOW);
-  Serial.println("System Ready. Warming up MQ-2 sensor...");
-  BT.println("System Ready. Warming up MQ-2 sensor...");
+  Serial.println("System Ready. Warming up MQ-2 sensor (30s hold)...");
+  BT.println("System Ready. Warming up MQ-2 sensor (30s hold)...");
 }
 
 void loop() {
@@ -77,17 +92,25 @@ void loop() {
     hum = 0.0;
   }
 
+  // Sensor stabilization check: suppress false alarms during warm-up
+  bool isWarmingUp = (millis() < WARMUP_TIME_MS);
+
   // Format legacy status string for human-readable monitors
   String statusMsg = "Gas: " + String(gasValue) + " | Temp: " + String(temp, 1) + "C | Hum: " + String(hum, 1) + "%";
+  if (isWarmingUp) {
+    unsigned long remainingSec = (WARMUP_TIME_MS - millis()) / 1000;
+    statusMsg += " [WARMING UP: " + String(remainingSec) + "s remaining]";
+  }
   Serial.println(statusMsg);
   BT.println(statusMsg);
 
   // Dispatch standard telemetry packet once per second ($S,<seq>,<gas>,<temp*10>,<rh*10>,<alarm>*<CS>)
-  int alarmState = (gasValue > threshold) ? 1 : 0;
+  // Alarm state is held off during warm-up to prevent boot-time false alarms
+  int alarmState = (!isWarmingUp && gasValue > threshold) ? 1 : 0;
   sendPacket(gasValue, temp, hum, alarmState);
 
   // Gas Detection Alert Logic
-  if (gasValue > threshold) {
+  if (alarmState == 1) {
     String alertMsg = ">>> WARNING: GAS DETECTED! <<<";
     Serial.println(alertMsg);
     BT.println(alertMsg);
@@ -105,6 +128,6 @@ void loop() {
   } else {
     digitalWrite(LED_PIN, LOW);
     digitalWrite(BUZZER_PIN, LOW);
-    delay(1000); // 1-second sample interval in normal state
+    delay(1000); // 1-second sample interval in normal/warmup state
   }
 }
