@@ -2,7 +2,7 @@
 
 ### *Dynamic Cross-Sensitivity Compensation & Zero-Trust Edge Safety in Residential Gas Monitoring*
 
-[![CI](https://github.com/Shree-svg/-SENTINEL/actions/workflows/ci.yml/badge.svg)](https://github.com/Shree-svg/-SENTINEL/actions)
+[![CI](https://github.com/Shree-svg/SENTINEL/actions/workflows/ci.yml/badge.svg)](https://github.com/Shree-svg/SENTINEL/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%208-61dafb?style=flat-square&logo=react)](https://react.dev)
@@ -212,8 +212,8 @@ steam           NON-HAZARD    | YES (11s)       🔴 YESNO      N/A       | NO  
 
 ### 2. Install Dependencies
 ```bash
-git clone https://github.com/Shree-svg/-SENTINEL.git
-cd -SENTINEL
+git clone https://github.com/Shree-svg/SENTINEL.git
+cd SENTINEL
 npm install
 ```
 

@@ -7,12 +7,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Shree-svg/-SENTINEL.git"
+    "url": "https://github.com/Shree-svg/SENTINEL.git"
   },
   "bugs": {
-    "url": "https://github.com/Shree-svg/-SENTINEL/issues"
+    "url": "https://github.com/Shree-svg/SENTINEL/issues"
   },
-  "homepage": "https://github.com/Shree-svg/-SENTINEL#readme",
+  "homepage": "https://github.com/Shree-svg/SENTINEL#readme",
   "keywords": [
     "cyber-physical-systems",
     "edge-computing",
