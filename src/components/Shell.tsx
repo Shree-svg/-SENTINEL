@@ -1,7 +1,7 @@
 // src/components/Shell.tsx
 // Redesigned with Product UI Styleguide: Clean tactile clay/porcelain surfaces & mint accents
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { 
   ShieldAlert, 
@@ -49,6 +49,7 @@ export default function Shell() {
   });
 
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
+  const selectRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
     const fetchStatus = () => {
@@ -68,6 +69,29 @@ export default function Shell() {
   const isRealActive = Boolean(hwStatus.realDeviceActive || hwStatus.hardwareConnected);
   const isDemoActive = Boolean(hwStatus.demoActive);
 
+  // Native listener on <select> to reliably capture automated test runner events (e.g. Selenium IDE)
+  useEffect(() => {
+    const el = selectRef.current;
+    if (!el) return;
+
+    const onNativeScenarioChange = async () => {
+      const val = el.value;
+      if (val && val !== hwStatus.scenario) {
+        setHwStatus((prev) => ({ ...prev, scenario: val }));
+        await setDemoScenario(val);
+        const updated = await getHardwareStatus();
+        setHwStatus(updated);
+      }
+    };
+
+    el.addEventListener("change", onNativeScenarioChange);
+    el.addEventListener("input", onNativeScenarioChange);
+    return () => {
+      el.removeEventListener("change", onNativeScenarioChange);
+      el.removeEventListener("input", onNativeScenarioChange);
+    };
+  }, [isDemoActive, hwStatus.scenario]);
+
   const handleToggleDemo = async () => {
     if (isDemoActive) {
       await disableDemoMode();
@@ -83,8 +107,10 @@ export default function Shell() {
     setHwStatus(updated);
   };
 
-  const handleScenarioChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const sc = e.target.value;
+  const handleScenarioChange = async (e: React.ChangeEvent<HTMLSelectElement> | React.FormEvent<HTMLSelectElement>) => {
+    const sc = (e.target as HTMLSelectElement).value;
+    if (!sc) return;
+    setHwStatus((prev) => ({ ...prev, scenario: sc }));
     await setDemoScenario(sc);
     const updated = await getHardwareStatus();
     setHwStatus(updated);
@@ -157,8 +183,14 @@ export default function Shell() {
                 {/* Scenario dropdown when ON */}
                 {isDemoActive && (
                   <select
+                    ref={selectRef}
+                    id="demo-scenario-select"
+                    name="scenario"
+                    data-testid="demo-scenario-select"
+                    aria-label="Demo Scenario"
                     value={hwStatus.scenario || "normal"}
                     onChange={handleScenarioChange}
+                    onInput={handleScenarioChange}
                     className="text-xs bg-[#FFFFFF] border border-[#CBD5E1] text-[#0F172A] font-semibold rounded-lg px-2 py-0.5 shadow-xs focus:outline-none focus:ring-1 focus:ring-[#0E7054] cursor-pointer"
                   >
                     {DEMO_SCENARIOS.map((sc) => (

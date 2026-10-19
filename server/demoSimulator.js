@@ -59,7 +59,7 @@ function targets(s, t) {
     case "cooking":
       return { gasConc: 30 * ramp(20), temp: SIM.BASE_TEMP + 6 * ramp(20), rh: SIM.BASE_RH + 12 * ramp(20) };
     case "gas_leak":
-      return { gasConc: Math.min(900, 15 * t), temp: SIM.BASE_TEMP, rh: SIM.BASE_RH };
+      return { gasConc: Math.min(900, 30 * t), temp: SIM.BASE_TEMP, rh: SIM.BASE_RH };
     case "adc_saturation":
       return { gasConc: 2000 * ramp(4), temp: SIM.BASE_TEMP, rh: SIM.BASE_RH };
     default:
