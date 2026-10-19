@@ -1,0 +1,11 @@
+If:
+  PathMatch: .*\.ino$
+CompileFlags:
+  Add:
+    - "-xc++"
+    - "-Wno-everything"
+Diagnostics:
+  Suppress:
+    - "pp_file_not_found"
+    - "unknown_typename"
+    - "undeclared_var_use"
