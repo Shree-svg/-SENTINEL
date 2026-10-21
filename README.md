@@ -213,7 +213,7 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 │   │   └── README.md
 │   ├── report/                    # Formal Academic Submission Report Suite
 │   │   ├── SRS.md                 # Formal Software Requirements Spec (ISO/IEC/IEEE 29148)
-│   │   ├── SDLC_PLAN.md           # CPS Process Model & 14-Week Schedule (Mermaid Gantt)
+│   │   ├── SDLC_PLAN.md           # CPS Process Model & 10-Week Schedule (Mermaid Gantt)
 │   │   ├── RISK_ANALYSIS.md       # Cyber-Physical Risk Matrix & FMEA Analysis
 │   │   ├── TEST_PLAN.md           # Formal Verification Strategy (IEEE 829 / TC01–TC13)
 │   │   ├── TESTING_REPORT.md      # Comprehensive Software Testing Report (Selenium, Jira, JMeter)

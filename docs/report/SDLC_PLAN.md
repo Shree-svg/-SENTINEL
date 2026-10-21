@@ -43,39 +43,39 @@ flowchart TD
 
 ## 2. Iterative Project Schedule & Milestone Timeline
 
-The implementation and submission timeline is structured across a disciplined 14-week project lifecycle:
+The implementation and submission timeline is structured across an accelerated 10-week project lifecycle:
 
 ```mermaid
 gantt
-    title SENTINEL Cyber-Physical Development Lifecycle
+    title SENTINEL Cyber-Physical Development Lifecycle (10 Weeks)
     dateFormat  YYYY-MM-DD
     section Phase 1: Requirements & Modeling
-    Problem Formulation & Sensor Cross-Sensitivity :a1, 2026-07-15, 14d
-    Empirical Dataset Collection (Kitchen Steam/Gas)  :a2, after a1, 10d
+    Problem Formulation & Sensor Cross-Sensitivity :a1, 2026-08-10, 7d
+    Empirical Dataset Collection (Kitchen Steam/Gas)  :a2, after a1, 7d
     section Phase 2: Algorithm & Firmware
-    Mathematical Formulation (R_comp, Slope, TTD)  :b1, after a2, 12d
-    Embedded Edge Firmware (ATmega328P C++)        :b2, after b1, 14d
+    Mathematical Formulation (R_comp, Slope, TTD)  :b1, after a2, 7d
+    Embedded Edge Firmware (ATmega328P C++)        :b2, after b1, 7d
     section Phase 3: Bridge & Simulation
-    Node.js Ingestion Bridge & Watchdog             :c1, after b2, 10d
-    Ephemeral Demo Simulator & Sandboxing          :c2, after c1, 10d
+    Node.js Ingestion Bridge & Watchdog             :c1, after b2, 7d
+    Ephemeral Demo Simulator & Sandboxing          :c2, after c1, 7d
     section Phase 4: Frontend Dashboard
-    React 19 Dashboard & Live Dual-Trace UI         :d1, after c2, 14d
-    Caregiver Portal & Admin Calibration Views      :d2, after d1, 10d
+    React 19 Dashboard & Live Dual-Trace UI         :d1, after c2, 7d
+    Caregiver Portal & Admin Calibration Views      :d2, after d1, 7d
     section Phase 5: Verification & Academic Audit
-    Automated Test Suite (TC01-TC13) & Benchmarking :e1, after d2, 10d
-    Formal Documentation, SRS & Academic Report     :e2, after e1, 12d
+    Comprehensive Verification (Selenium, Jira, JMeter) :e1, after d2, 7d
+    Formal Documentation, SRS & Academic Report     :e2, after e1, 7d
 ```
 
 ### Milestone & Deliverables Matrix
 
 | Phase | Milestone | Start Date | End Date | Key Deliverables | Verification Gate |
 | :---: | :--- | :---: | :---: | :--- | :--- |
-| **M1** | Problem Characterization & Datasets | Week 1 | Week 3 | `data/steam.csv`, `data/cooking.csv`, `data/gas.csv`, `data/normal.csv` | Empirical data consistency check |
-| **M2** | Mathematical Formulation & Firmware | Week 4 | Week 6 | `server/signalAnalytics.js`, `firmware/sentinel_firmware.ino` | Unit tests for slope & compensation |
-| **M3** | Ingestion Bridge & Simulator | Week 7 | Week 8 | `server/index.js`, `server/demoSimulator.js` | XOR checksum & auto-reconnect tests |
-| **M4** | React Dashboard & UI Layer | Week 9 | Week 11 | `src/App.tsx`, `LiveStatusPanel.tsx`, `CaregiverView.tsx` | Clean production build (`npm run build`) |
-| **M5** | Automated Testing & Evaluation | Week 12 | Week 13 | `tests/api.test.js`, `tests/pipeline.test.js`, `scripts/evaluate.js` | 100% passing tests & benchmark replay |
-| **M6** | Final Academic Report & Audit | Week 14 | Week 14 | `docs/report/` complete suite, `docs/IMPLEMENTATION_PLAN.md` | Final submission checklist audit |
+| **M1** | Problem Characterization & Datasets | Week 1 | Week 2 | `data/steam.csv`, `data/cooking.csv`, `data/gas.csv`, `data/normal.csv` | Empirical data consistency check |
+| **M2** | Mathematical Formulation & Firmware | Week 3 | Week 4 | `server/signalAnalytics.js`, `firmware/sentinel_firmware.ino` | Edge safety floor verification & regression model check |
+| **M3** | Ingestion Bridge & Simulator | Week 5 | Week 6 | `server/index.js`, `server/demoSimulator.js` | XOR checksum & auto-reconnect tests |
+| **M4** | React Dashboard & UI Layer | Week 7 | Week 8 | `src/App.tsx`, `LiveStatusPanel.tsx`, `CaregiverView.tsx` | Clean production build (`npm run build`) |
+| **M5** | Multi-Tier Testing & Benchmarking | Week 9 | Week 9 | Selenium IDE suite, Jira tracking, JMeter load tests | Multi-tier test pass & 0 error rate |
+| **M6** | Final Academic Report & Audit | Week 10 | Week 10 | `docs/report/` complete suite, `SENTINEL_Comprehensive_Testing_Report.pdf` | Final submission checklist audit |
 
 ---
 
