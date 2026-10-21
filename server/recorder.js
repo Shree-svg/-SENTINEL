@@ -8,10 +8,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.resolve(__dirname, '../data');
+const RECORDINGS_DIR = path.resolve(DATA_DIR, 'recordings');
 
-// Ensure /data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Ensure /data and /data/recordings directories exist
+if (!fs.existsSync(RECORDINGS_DIR)) {
+  fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
 }
 
 let activeRecording = {
@@ -29,7 +30,7 @@ export function startRecording(label = 'normal', filename = null) {
 
   const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const targetFilename = filename || `${sanitizedLabel}_${dateStr}.csv`;
-  const targetFilePath = path.join(DATA_DIR, targetFilename);
+  const targetFilePath = path.join(RECORDINGS_DIR, targetFilename);
 
   // If new file, create and write standard CSV header
   if (!fs.existsSync(targetFilePath)) {
@@ -98,8 +99,8 @@ export function recordReading(rawGas, temp, hum, deviceTime = Date.now()) {
 export function getRecordingStatus() {
   let recordedFiles = [];
   try {
-    if (fs.existsSync(DATA_DIR)) {
-      recordedFiles = fs.readdirSync(DATA_DIR).filter(f => f.endsWith('.csv'));
+    if (fs.existsSync(RECORDINGS_DIR)) {
+      recordedFiles = fs.readdirSync(RECORDINGS_DIR).filter(f => f.endsWith('.csv'));
     }
   } catch {
     // ignore
@@ -107,7 +108,7 @@ export function getRecordingStatus() {
 
   return {
     ...activeRecording,
-    dataDirectory: DATA_DIR,
+    dataDirectory: RECORDINGS_DIR,
     recordedFiles
   };
 }

@@ -216,6 +216,8 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 │   │   ├── SDLC_PLAN.md           # CPS Process Model & 14-Week Schedule (Mermaid Gantt)
 │   │   ├── RISK_ANALYSIS.md       # Cyber-Physical Risk Matrix & FMEA Analysis
 │   │   ├── TEST_PLAN.md           # Formal Verification Strategy (IEEE 829 / TC01–TC13)
+│   │   ├── TESTING_REPORT.md      # Comprehensive Software Testing Report (Selenium, Jira, JMeter)
+│   │   ├── SENTINEL_Comprehensive_Testing_Report.pdf # Official Compiled Testing Report PDF
 │   │   ├── TOOLS_USED.md          # Software Engineering Tools with Evidence
 │   │   └── REFERENCES.md          # Verified IEEE Citations with Real DOIs
 │   ├── CONTRIBUTING.md            # Contributor guidelines
@@ -223,6 +225,9 @@ The benchmark evaluation suite runs against four labeled empirical datasets (`da
 ├── firmware/                      # Embedded C++ Microcontroller Firmware
 │   └── sentinel_firmware/
 │       └── sentinel_firmware.ino  # Production Arduino sketch (30s warm-up hold + checksum)
+├── performance/                   # Performance & Load Testing Suite (Apache JMeter)
+│   ├── plans/                     # JMeter test plans (pf01.jmx–pf08.jmx)
+│   └── README.md                  # Performance testing matrix & CLI execution guide
 ├── scripts/
 │   └── evaluate.js                # Headless cyber-physical benchmark runner
 ├── server/                        # Backend Ingestion Bridge & Demo Simulator
@@ -313,6 +318,12 @@ npm run evaluate
 # 4. Typecheck TypeScript & compile production Vite bundle
 npm run build
 ```
+
+### 📋 Formal Verification & Testing Documentation
+* 📑 **Comprehensive Software Testing Report**: [`docs/report/TESTING_REPORT.md`](docs/report/TESTING_REPORT.md)
+* 📕 **Official Testing Report (PDF)**: [`docs/report/SENTINEL_Comprehensive_Testing_Report.pdf`](docs/report/SENTINEL_Comprehensive_Testing_Report.pdf)
+* 📐 **Software Test Plan (IEEE 829)**: [`docs/report/TEST_PLAN.md`](docs/report/TEST_PLAN.md)
+* 🚀 **JMeter Performance Suite**: [`performance/README.md`](performance/README.md)
 
 ---
 

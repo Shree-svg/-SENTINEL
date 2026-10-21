@@ -1,7 +1,7 @@
 // server/index.js
 // SENTINEL Hardware Ingestion & Classification Bridge Server
 // Connects Arduino Nano (USB Serial) to the React Dashboard with Auto-Reconnect Watchdog (Rules §2.3)
-
+import { registerAlertRoutes } from './alertRoutes.js';
 import express from 'express';
 import cors from 'cors';
 import { SerialPort } from 'serialport';
@@ -346,10 +346,15 @@ async function scanAndConnectSerial() {
     );
 
     if (arduinoPort) {
-      console.log(`[SENTINEL Bridge] Found hardware on ${arduinoPort.path}. Connecting at 9600 baud...`);
+      let targetPath = arduinoPort.path;
+      // On macOS, always use callout (cu.*) devices. tty.* blocks waiting for carrier detect (DCD)
+      if (process.platform === 'darwin' && targetPath.startsWith('/dev/tty.')) {
+        targetPath = targetPath.replace('/dev/tty.', '/dev/cu.');
+      }
+      console.log(`[SENTINEL Bridge] Found hardware candidate on ${targetPath}. Connecting at 9600 baud...`);
       
       const port = new SerialPort({
-        path: arduinoPort.path,
+        path: targetPath,
         baudRate: 9600,
         autoOpen: true
       });
@@ -357,13 +362,17 @@ async function scanAndConnectSerial() {
       const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
       port.on('open', () => {
         isHardwareConnected = true;
-        connectedPortName = arduinoPort.path;
+        connectedPortName = targetPath;
         activeSerialPort = port;
         hardwareStreamStartTime = Date.now();
-        console.log(`[SENTINEL Bridge] Successfully connected to ${arduinoPort.path} at 9600 baud`);
+        console.log(`[SENTINEL Bridge] Successfully connected to ${targetPath} at 9600 baud`);
       });
 
       parser.on('data', (line) => {
+        const trimmed = line.trim();
+        if (trimmed) {
+          console.log(`[SENTINEL Serial RX]: ${trimmed}`);
+        }
         handleRawTelemetryLine(line, false);
       });
 
@@ -376,15 +385,19 @@ async function scanAndConnectSerial() {
       });
 
       port.on('error', (err) => {
-        console.error(`[SENTINEL Bridge] Serial error:`, err.message);
+        if (err.message && err.message.includes('busy')) {
+          console.error(`[SENTINEL Bridge] Serial port ${targetPath} is currently busy / locked by another application (e.g. Google Chrome Web Serial or Arduino IDE Serial Monitor).`);
+        } else {
+          console.error(`[SENTINEL Bridge] Serial error:`, err.message);
+        }
         isHardwareConnected = false;
         connectedPortName = null;
         activeSerialPort = null;
         hardwareStreamStartTime = null;
       });
     }
-  } catch {
-    // Keep server running smoothly
+  } catch (err) {
+    console.error(`[SENTINEL Bridge] Port scan error:`, err.message);
   }
 }
 
@@ -464,12 +477,35 @@ setInterval(() => {
 
 // 1. GET /api/readings/latest
 app.get('/api/readings/latest', (req, res) => {
-  if ((!isHardwareConnected && !demoActive) || !latestReading) {
-    return res.status(503).json({
-      error: "Hardware sensor node disconnected. Awaiting USB serial connection.",
-      hardwareConnected: false,
-      demoActive: false
-    });
+  if (!latestReading) {
+    if (isHardwareConnected) {
+      return res.status(200).json({
+        connecting: true,
+        hardwareConnected: true,
+        demoActive: false,
+        port: connectedPortName,
+        gas: 0,
+        raw: 0,
+        temp: 24,
+        temperature: 24,
+        rh: 50,
+        hum: 50,
+        humidity: 50,
+        classification: {
+          label: "Connecting...",
+          confidence: 1.0,
+          factors: ["Serial port connected. Synchronizing initial telemetry frames..."],
+          severity: "low"
+        }
+      });
+    }
+    if (!demoActive) {
+      return res.status(503).json({
+        error: "Hardware sensor node disconnected. Awaiting USB serial connection.",
+        hardwareConnected: false,
+        demoActive: false
+      });
+    }
   }
   res.json({
     ...latestReading,
@@ -495,16 +531,19 @@ app.get('/api/alerts', (req, res) => {
 });
 
 // 4. POST /api/alerts/:id/acknowledge (REQ-ALT-4)
-app.post('/api/alerts/:id/acknowledge', (req, res) => {
-  const { id } = req.params;
-  historicalAlerts = historicalAlerts.map(a =>
-    a._id === id
-      ? { ...a, status: "acknowledged", acknowledgedAt: new Date().toISOString() }
-      : a
-  );
-  res.json({ success: true, alertId: id });
-});
+registerAlertRoutes(
 
+  app,
+
+  () => historicalAlerts,
+
+  (updatedAlerts) => {
+
+    historicalAlerts = updatedAlerts;
+
+  }
+
+);   
 // 5. POST /api/calibration/label (Admin labelling per REQ-ML-1)
 app.post('/api/calibration/label', (req, res) => {
   const { readingId, label } = req.body;

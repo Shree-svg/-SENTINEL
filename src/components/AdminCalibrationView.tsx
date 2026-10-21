@@ -84,12 +84,12 @@ export default function AdminCalibrationView() {
   const handleToggleRecording = async () => {
     if (recStatus.isRecording) {
       const res = await stopRecordingSession();
-      setSaveNotice(`Saved ${res.sampleCount ?? 0} samples to /data/${res.filename}`);
+      setSaveNotice(`Saved ${res.sampleCount ?? 0} samples to /data/recordings/${res.filename}`);
       refreshRec();
       setTimeout(() => setSaveNotice(null), 3000);
     } else {
       await startRecordingSession(selectedLabel);
-      setSaveNotice(`Started recording session [${selectedLabel}] to /data`);
+      setSaveNotice(`Started recording session [${selectedLabel}] to /data/recordings`);
       refreshRec();
       setTimeout(() => setSaveNotice(null), 3000);
     }
@@ -165,7 +165,7 @@ export default function AdminCalibrationView() {
               Live Telemetry CSV Recording Mode
             </h2>
             <p className="text-xs text-[#64748B]">
-              Capture labeled hardware sessions directly into <code className="bg-[#ECEEF2] px-1.5 py-0.5 rounded text-[#0F172A] font-mono">/data/*.csv</code> for offline evaluation and detector benchmarking.
+              Capture labeled hardware sessions directly into <code className="bg-[#ECEEF2] px-1.5 py-0.5 rounded text-[#0F172A] font-mono">/data/recordings/*.csv</code> for offline evaluation and detector benchmarking.
             </p>
           </div>
 
@@ -210,11 +210,11 @@ export default function AdminCalibrationView() {
           </div>
         </div>
 
-        {/* Available Recorded Files in /data */}
+        {/* Available Recorded Files in /data/recordings */}
         <div className="mt-4 pt-3 border-t border-[#F1F3F6] flex flex-wrap items-center justify-between text-xs text-[#64748B]">
           <div className="flex items-center space-x-1.5">
             <FileSpreadsheet className="w-4 h-4 text-[#0E7054]" />
-            <span className="font-semibold text-[#0F172A]">Available Datasets in /data:</span>
+            <span className="font-semibold text-[#0F172A]">Available Recordings in /data/recordings:</span>
             <span className="font-mono text-[#64748B]">({recStatus.recordedFiles.length} files)</span>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-1 sm:mt-0 font-mono text-[11px]">

@@ -315,7 +315,7 @@ export default function Shell() {
               <Usb className="w-3.5 h-3.5 text-[#64748B]" />
               <span className="text-[11px] font-medium">
                 {hwStatus.hardwareConnected ? (
-                  <span className="text-[#0E7054] font-mono font-semibold">Active Port: {hwStatus.port} (115200 baud)</span>
+                  <span className="text-[#0E7054] font-mono font-semibold">Active Port: {hwStatus.port} ({hwStatus.baudRate || 9600} baud)</span>
                 ) : (
                   <span className="text-[#92400E]">Auto-Reconnect Watchdog: Searching for Arduino Nano...</span>
                 )}

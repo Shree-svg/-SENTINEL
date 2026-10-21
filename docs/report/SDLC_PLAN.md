@@ -5,7 +5,7 @@
 **Version**: 1.0.0 (Final Submission)  
 **Submitted by**: Shreedhar Sharma (Reg. No.: 24BPS1149)  
 **Programme**: B.Tech — Computer Science and Engineering  
-**Institution**: Vellore Institute of Technology (VIT)  
+**Institution**: Vellore Institute of Technology (VIT) Chennai  
 **Faculty Supervisor**: Dr Elakiya R  
 **Academic Context**: Software Engineering Capstone Project Submission  
 

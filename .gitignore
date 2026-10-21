@@ -49,3 +49,10 @@ build/
 coverage/
 *.lcov
 .nyc_output
+
+# Performance Test Results & Run Logs
+performance/results/*
+!performance/results/.gitkeep
+performance/logs/*
+!performance/logs/.gitkeep
+*.jtl

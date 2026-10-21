@@ -31,7 +31,7 @@ export async function getHardwareStatus(): Promise<{
     hardwareConnected: false,
     port: null,
     sensorSuite: "MQ2 (A0) + DHT11 (D2)",
-    baudRate: 115200,
+    baudRate: 9600,
     watchdogStatus: "Offline / Awaiting Bridge",
     demoActive: false,
     scenario: "normal",
