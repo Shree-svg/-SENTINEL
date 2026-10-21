@@ -9,7 +9,7 @@
 **Programme**: B.Tech — Computer Science and Engineering  
 **Institution**: Vellore Institute of Technology (VIT)  
 **Faculty Supervisor**: Dr Elakiya R  
-**Repository**: [https://github.com/Shree-svg/-SENTINEL](https://github.com/Shree-svg/-SENTINEL)
+**Repository**: [https://github.com/Shree-svg/CyberSentra](https://github.com/Shree-svg/CyberSentra)
 
 ---
 

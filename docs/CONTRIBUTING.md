@@ -26,8 +26,8 @@ All contributors are expected to adhere to our [Code of Conduct](CODE_OF_CONDUCT
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/Shree-svg/-SENTINEL.git
-cd -SENTINEL
+git clone https://github.com/Shree-svg/CyberSentra.git
+cd CyberSentra
 npm install
 ```
 
