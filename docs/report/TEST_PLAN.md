@@ -17,11 +17,12 @@
 ## Table of Contents
 1. [Testing Objectives & Scope](#1-testing-objectives--scope)
 2. [Multi-Tier Testing Methodology](#2-multi-tier-testing-methodology)
-3. [Selenium IDE UI Test Case Register (UI-01–UI-20)](#3-selenium-ide-ui-test-case-register-ui-01ui-20)
-4. [Jira Test Management Register (ST-4–ST-20)](#4-jira-test-management-register-st-4st-20)
-5. [Apache JMeter Performance Test Suite (PF-01–PF-08)](#5-apache-jmeter-performance-test-suite-pf-01pf-08)
-6. [Test Environment & Tools](#6-test-environment--tools)
-7. [Entry, Exit, and Suspension Criteria](#7-entry-exit-and-suspension-criteria)
+3. [Functional vs. Non-Functional Testing Classification](#3-functional-vs-non-functional-testing-classification)
+4. [Selenium IDE UI Test Case Register (UI-01–UI-20)](#4-selenium-ide-ui-test-case-register-ui-01ui-20)
+5. [Jira Test Management Register (ST-4–ST-20)](#5-jira-test-management-register-st-4st-20)
+6. [Apache JMeter Performance Test Suite (PF-01–PF-08)](#6-apache-jmeter-performance-test-suite-pf-01pf-08)
+7. [Test Environment & Tools](#7-test-environment--tools)
+8. [Entry, Exit, and Suspension Criteria](#8-entry-exit-and-suspension-criteria)
 
 ---
 
@@ -61,7 +62,62 @@ The verification strategy adopts a three-pillar testing architecture that bridge
 
 ---
 
-## 3. Selenium IDE UI Test Case Register (UI-01–UI-20)
+## 3. Functional vs. Non-Functional Testing Classification
+
+To ensure structured coverage across both operational software behavior and system quality attributes (ISO/IEC 25010), all tests across the testing triad are categorized into **Functional Testing** (behavioral logic, safety state machines, and data processing) and **Non-Functional Testing** (performance SLAs, load limits, security boundaries, UI responsiveness, and accessibility):
+
+### Comprehensive Classification Matrix
+
+| Category | Pillar / Tool | Test ID | Test Name / Focus | Target Quality Attribute (ISO 25010) | Verification Objective |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Functional** | Selenium IDE | `UI-01` | Steam False-Alarm Suppression | Functional Correctness & Safety | Asserts that kettle humidity spikes do not trigger acoustic sirens |
+| **Functional** | Selenium IDE | `UI-02` | Gas Leak State Escalation | Functional Progression | Validates progression across all 5 FSM escalation stages |
+| **Functional** | Selenium IDE | `UI-03` | Alarm Acknowledgement | Operator Control & Usability | Confirms alarm silencing and local operator state transition |
+| **Functional** | Selenium IDE | `UI-04` | Application View Navigation | Navigation & Routing | Validates view loading across Dashboard, History, and Caregiver views |
+| **Functional** | Selenium IDE | `UI-05` | Wildcard Route Redirection | Error Handling & Fault Tolerance | Confirms invalid URLs safely redirect back to main dashboard |
+| **Functional** | Selenium IDE | `UI-06` | Simulated Dispatch Boundary | Safety Invariant Enforcement | Verifies demo mode sets simulated flag without real actuator triggers |
+| **Functional** | Selenium IDE | `UI-07` | Sensor Fault Diagnostics | Fault Tolerance & Diagnostics | Confirms disconnected sensor triggers diagnostic error banners |
+| **Functional** | Selenium IDE | `UI-08` | ADC Saturation Alert | Boundary Handling | Asserts visual saturation warning when raw ADC clips at 1023 |
+| **Functional** | Selenium IDE | `UI-09` | Alert History Logging | Auditability & Event Logging | Validates persistent chronological logging of hazard transitions |
+| **Functional** | Selenium IDE | `UI-10` | Contributing Factors Drawer | System Explainability | Confirms mathematical decomposition drawer renders ΔRH and ΔT |
+| **Functional** | Selenium IDE | `UI-11` | Caregiver Portal Workflow | Functional Feature & Alerting | Tests caregiver configuration, emergency timers, and 112 dialer |
+| **Functional** | Selenium IDE | `UI-12` | Contact Details Settings | Data Validation & Persistence | Confirms recipient phone number formatting and storage |
+| **Functional** | Selenium IDE | `UI-13` | Demo Telemetry Template | Data Conformance | Asserts synthetic scenario generator matches telemetry schema |
+| **Functional** | Selenium IDE | `UI-15` | Telemetry CSV Recording | Data Capture & Export | Tests start/stop session recording and CSV file generation |
+| **Functional** | Selenium IDE | `UI-16` | Hardware Safety Lockout | Safety Invariant Enforcement | Blocks synthetic demo overrides when physical serial device is live |
+| **Functional** | Selenium IDE | `UI-17` | End-to-End Integration | System Lifecycle Integrity | Verifies complete cycle from 30s warm-up hold to safe recovery |
+| **Functional** | Jira (`ST-*`) | `TC-01` (`ST-4`) | End-to-End System Execution | Functional Completeness | Verifies end-to-end telemetry flow and dashboard rendering |
+| **Functional** | Jira (`ST-*`) | `TC-02` (`ST-5`) | Backend Serial Ingestion | Hardware Interface Compatibility | Validates serial daemon communication with Arduino microcontroller |
+| **Functional** | Jira (`ST-*`) | `TC-03` (`ST-6`) | Sensor Telemetry Stream (1 Hz) | Data Transmission Integrity | Confirms continuous 1.0s telemetry polling without packet loss |
+| **Functional** | Jira (`ST-*`) | `TC-04` (`ST-7`) | Ambient Baseline Tracking | Accuracy & Calibration | Validates safe baseline tracking under quiescent living room air |
+| **Functional** | Jira (`ST-*`) | `TC-05` (`ST-8`) | Steam Rejection Verification | Safety & Fault Rejection | Confirms cross-sensitivity compensation eliminates steam false alarms |
+| **Functional** | Jira (`ST-*`) | `TC-06` (`ST-9`) | Cooking Transient Handling | Noise Rejection | Asserts high-heat cooking vapors do not escalate to siren state |
+| **Functional** | Jira (`ST-*`) | `TC-07` (`ST-10`) | Gas Leak Detection & Escalation | Early Warning & Hazard Detection | Verifies rolling regression slope detects ascending gas concentrations |
+| **Functional** | Jira (`ST-*`) | `TC-08` (`ST-11`) | Sensor Disconnection Recovery | Fault Tolerance | Validates graceful recovery and diagnostic display upon sensor disconnect |
+| **Functional** | Jira (`ST-*`) | `TC-09` (`ST-12`) | ADC Saturated Clipping | Fault Tolerance | Tests system resilience when sensor input hits physical 1023 max |
+| **Functional** | Jira (`ST-*`) | `TC-10` (`ST-13`) | Alert Generation & Notification | Notification Delivery | Confirms critical threshold breaches dispatch immediate UI alerts |
+| **Functional** | Jira (`ST-*`) | `TC-11` (`ST-14`) | Serial Port Watchdog Recovery | Resilience & Auto-Recovery | Validates 2.0s auto-reconnect watchdog reconnects dropped COM ports |
+| **Functional** | Jira (`ST-*`) | `TC-12` (`ST-17`) | Dashboard Hydration After Refresh | State Persistence | Verifies active alarm states rehydrate immediately upon page reload |
+| **Functional** | Jira (`ST-*`) | `TC-13` (`ST-15`) | Invalid API Input Validation | Input Security & Bounds Checking | Verifies malformed JSON / bounds breaches return HTTP 400 |
+| **Functional** | Jira (`ST-*`) | `TC-14` (`ST-18`) | Telemetry REST API Schema | API Contract Verification | Validates GET endpoints return expected keys and data types |
+| **Functional** | Jira (`ST-*`) | `TC-15` (`ST-19`) | Active Alert State Consistency | FSM Debounce & Latching | Confirms alarm remains latched until gas drops below clear threshold |
+| **Functional** | Jira (`ST-*`) | `TC-16` (`ST-20`) | Alert Acknowledgement Route | Operator Control | Verifies `POST /api/alerts/:id/acknowledge` updates alert status |
+| **Functional** | Apache JMeter | `PF-01` | REST Endpoint Availability | API Contract & Availability | Verifies HTTP 200 responses across all core telemetry endpoints |
+| **Non-Functional** | Selenium IDE | `UI-18` | Responsive Multi-Viewport Layout | Multi-Device Usability | Validates UI layout across desktop (1920px), tablet (768px), and mobile (375px) |
+| **Non-Functional** | Selenium IDE | `UI-19` | Dashboard Update Latency | Temporal Performance | Confirms 1 Hz continuous telemetry renders without UI frame drops |
+| **Non-Functional** | Selenium IDE | `UI-20` | Accessibility Standards | Accessibility (WCAG 2.1 / ARIA) | Audits contrast ratios, screen reader labels, and keyboard tab focus |
+| **Non-Functional** | Apache JMeter | `Sweep` | Initial API Sweep Latency | Performance & Latency SLA | Benchmarks baseline latency under 2 users across 8 endpoints (avg 1.01 ms) |
+| **Non-Functional** | Apache JMeter | `PF-02` | Response Time Under Concurrency | Latency SLA Compliance | Validates response times under 10 concurrent users remain < 5 ms |
+| **Non-Functional** | Apache JMeter | `PF-03` | Throughput & Load Ceiling | Capacity & Scalability | Evaluates 50 users / 3,000 requests to measure throughput (102.02 req/s) |
+| **Non-Functional** | Apache JMeter | `PF-04` | Concurrency Saturation & Stress | Robustness Under Peak Stress | Tests breaking point across 100, 200, and 400 concurrent thread ramps |
+| **Non-Functional** | Apache JMeter | `PF-05` | Operational Soak & Endurance | Reliability & Memory Stability | 30-minute continuous polling loop testing for memory leaks or event lag |
+| **Non-Functional** | Apache JMeter | `PF-06` | Unauthenticated Request Bounds | Security & Access Control | Verifies endpoint behavior when requests lack authentication credentials |
+| **Non-Functional** | Apache JMeter | `PF-07` | Burst Traffic Spike Recovery | Elasticity & Spike Recovery | Tests recovery latency following instantaneous high-frequency traffic bursts |
+| **Non-Functional** | Apache JMeter | `PF-08` | CORS Header & Origin Enforcement | Network Security Policy | Asserts ACAO header restrictions and rejects unauthorized cross-origins |
+
+---
+
+## 4. Selenium IDE UI Test Case Register (UI-01–UI-20)
 
 The browser test suite (`sentinel_merged_fixed.side`) defines **19 automated test cases** executed in Selenium IDE:
 
@@ -89,7 +145,7 @@ The browser test suite (`sentinel_merged_fixed.side`) defines **19 automated tes
 
 ---
 
-## 4. Jira Test Management Register (ST-4–ST-20)
+## 5. Jira Test Management Register (ST-4–ST-20)
 
 16 formal test cases are tracked under the **SENTINEL Testing** project in Jira to ensure end-to-end requirements traceability:
 
@@ -114,7 +170,7 @@ The browser test suite (`sentinel_merged_fixed.side`) defines **19 automated tes
 
 ---
 
-## 5. Apache JMeter Performance Test Suite (PF-01–PF-08)
+## 6. Apache JMeter Performance Test Suite (PF-01–PF-08)
 
 The performance testing suite validates backend resilience, concurrency limits, and latency SLAs under simulated multi-client workloads:
 
@@ -132,7 +188,7 @@ The performance testing suite validates backend resilience, concurrency limits, 
 
 ---
 
-## 6. Test Environment & Tools
+## 7. Test Environment & Tools
 
 | Component | Specification | Deployment / Configuration |
 | :--- | :--- | :--- |
@@ -146,7 +202,7 @@ The performance testing suite validates backend resilience, concurrency limits, 
 
 ---
 
-## 7. Entry, Exit, and Suspension Criteria
+## 8. Entry, Exit, and Suspension Criteria
 
 ### Entry Criteria
 1. Backend ingestion server running cleanly on `http://127.0.0.1:3001`.
